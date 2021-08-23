@@ -17,7 +17,7 @@ public:
 
     ColTable(string& name, vector<string>& col_names, vector<vector<int>> col_data)
     : Table(name, col_names)
-    , columns(col_data.size())
+    , columns(col_data)
     , num_dim(col_data.size())
     {
 
