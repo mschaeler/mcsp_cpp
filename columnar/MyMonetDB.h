@@ -50,9 +50,9 @@ protected:
     Synopsis& select(ColTable& t, const int col_index, const int lower, const int upper, Synopsis& s){
         const int size = s.size();
         s.clear();
-        vector<int>& column = t.columns.at(col_index);
+        const vector<int>& column = t.columns.at(col_index);
         for(int i=0;i<size;i++){
-            int tid = s.get(i);
+            const int tid = s.get(i);
             if(Util::isIn(column.at(tid),lower,upper)){
                 s.add(tid);
             }

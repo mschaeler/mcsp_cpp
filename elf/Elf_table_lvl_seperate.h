@@ -637,6 +637,7 @@ public:
     }
 
     static bool exists(double scale) {
+        return false;
         string file = "..//data/"+to_string(scale)+"_elf_separate"+".meta.elf";
         ifstream f(file.c_str());
         return f.good();

@@ -6,11 +6,11 @@
 #define MY_MCSP_SELECTIONQUERYSET_H
 
 #include <vector>
-#include "Util.h"
+#include "../general/Util.h"
 #include "SelectionQuery.h"
-#include "Random.h"
-#include "SCSP.h"
-#include "MCSP.h"
+#include "../general/Random.h"
+#include "../general/SCSP.h"
+#include "../general/MCSP.h"
 #include <random>
 #include <algorithm>    // std::sort
 
@@ -35,9 +35,9 @@ public:
             cardinalities(Util::cardinalitiesTPCH(scale))
             //, myQueries(num_queries)
     {
-        //rand.seed(123);
         for(int q=0;q<num_queries;q++) {
-            //myQueries.at(q) = SCSP(column, selectivity, cardinalities, rand);
+            MCSP temp = MCSP(column, selectivity, cardinalities, _rand);
+            myQueries.push_back(temp);
         }
     }
 

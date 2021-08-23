@@ -7,8 +7,8 @@
 #include "columnar/MyMonetDB_II.h"
 #include "elf/Elf_builder_separate.h"
 #include "elf/Elf_table_lvl_seperate.h"
-#include "general/SelectionQuerySet.h"
-#include "general/SelectionTests.h"
+#include "benchmark/SelectionQuerySet.h"
+#include "benchmark/SelectionTests.h"
 #include "columnar/MyHyper.h"
 #include "elf/Elf_Dbms_Lvl.h"
 
@@ -74,21 +74,6 @@ void run_my_hyper_2(double scale){
     delete data_lin;
 }*/
 
-void run_elf(double scale){
-    DatabaseSystem* dbms;
-    Table* t;
-
-    string t_name = "Test Table";
-    vector<string> vec = Util::get_tpch_linetime_column_names();
-    vector<vector<int>> data = Util::getDataTPCH(scale);
-    RowTable* row_table = new RowTable(t_name, vec, data);
-    cout << row_table->out() << endl;
-    ColTable col_t(*row_table);
-    cout << col_t.out() << endl;
-    Elf_builder_separate::build(col_t);
-    //delete data;
-}
-
 void run_p_benchmark(double scale){
     DatabaseSystem* dbms;
     Table* t;
@@ -133,14 +118,13 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << endl;
-    double scale = 20;
+    double scale = 0.1;
     cout << "scale="<<scale<<endl;
-    test_something(0.1);
-    /*test_something(1.0);
-    test_something(5.0);
-    test_something(10);*/
-    test_something(15);
-    //test_something(20);
+    //test_something(0.1);
+
+    //vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
+    vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new MyRowiseHyper(), new Elf_Dbms_Lvl()};
+    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
 
     //run_p_benchmark(scale);
 

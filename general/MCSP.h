@@ -98,25 +98,36 @@ class MCSP : public SelectionQuery {
     }
 
 public:
-    MCSP(int num_columns, int table_dimensionality, double selectivity, double prob_increase, vector<int> cardinalities, Random& rand) :
-            columns(num_columns)
-            , predicates(num_columns)
-            , selectivities(num_columns)
+    /**
+     * Mono column selection predicate constructor
+     * @param num_columns
+     * @param table_dimensionality
+     * @param selectivity
+     * @param prob_increase
+     * @param cardinalities
+     * @param rand
+     */
+    MCSP(int column, double selectivity, vector<int> cardinalities, Random& rand) :
+            columns(1) // by definition
+            , predicates(1)
+            , selectivities(1)
     {
-        prob_increase_per_column = prob_increase;
-        vector<double> column_probs = probabilities(table_dimensionality, prob_increase_per_column);
-        cout << "diceColumns() " << Util::to_string(column_probs) << endl;
-        diceColumns(table_dimensionality, num_columns);
-
-        //for each dice column create the predicate
-        for(int i=0;i<columns.size();i++) {
-            int column = columns[i];
-            selectivities[i] = selectivity;
-            vector<int> sinlge_predicate = single_column_predicate(column, cardinalities, rand, selectivities[i]);
-            predicates.at(i) = sinlge_predicate;
-        }
+        columns.at(0)       = column;
+        selectivities.at(0) = selectivity;
+        vector<int> sinlge_predicate = single_column_predicate(column, cardinalities, rand, selectivity);
+        //cout << "column="<<column<<" selectivity=" << selectivity << "predicate=" << Util::to_string(sinlge_predicate) << endl;
+        predicates.at(0)    = sinlge_predicate;
     }
 
+    /**
+     * Real multi column selection predicate constructor
+     * @param max_num_columns
+     * @param table_dimensionality
+     * @param base_selectivities
+     * @param prob_increase
+     * @param cardinalities
+     * @param rand
+     */
     MCSP(int max_num_columns, int table_dimensionality, vector<double> base_selectivities, double prob_increase, vector<int> cardinalities, Random& rand)
     {
         prob_increase_per_column = prob_increase;

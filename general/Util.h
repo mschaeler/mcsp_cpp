@@ -138,6 +138,12 @@ public:
 
     }
 
+    static vector<vector<int>> getDataTPCHTuple_columnar(double s){
+        vector<vector<int>> all_data(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)));
+        getDataTPCHTuple_columnar(all_data, s);
+        return all_data;//by value
+    }
+
     static void getDataTPCHTuple_columnar(vector<vector<int>>& all_data, double s){
         size_t l_shipdate	=0;
         size_t l_discount	=1;
@@ -384,7 +390,7 @@ public:
     }
 
 
-    static bool isIn(const int value, const int lower, const int upper){
+    static inline bool isIn(const int value, const int lower, const int upper){
         return (lower<=value && value<=upper);// lower <= value <= upper
     }
     static bool isIn(const int id_to_search, const vector<int>& in_list){
@@ -395,7 +401,7 @@ public:
         }
         return false;
     }
-    static bool isIn(const vector<int>& tuple, const vector<int>& colum_indexes, const vector<vector<int>>& predictates){
+    static inline bool isIn(const vector<int>& tuple, const vector<int>& colum_indexes, const vector<vector<int>>& predictates){
         const int num_predicates = colum_indexes.size();
         for(int p=0;p<num_predicates;p++){
             const int column_index = colum_indexes[p];

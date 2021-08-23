@@ -18,7 +18,7 @@ class MyRowiseHyper : public DatabaseSystem{
 
         const int size=t.size();
         for(int tid=0;tid<size;tid++){
-            vector<int>& tuple = t.tuples.at(tid);
+            const vector<int>& tuple = t.tuples.at(tid);
             if(Util::isIn(tuple.at(col_index),lower,upper)){
                 intermediate_result.add(tid);
             }
@@ -35,7 +35,7 @@ class MyRowiseHyper : public DatabaseSystem{
 
         const int size=t.size();
         for(int tid=0;tid<size;tid++){
-            vector<int>& tuple = t.tuples.at(tid);
+            const vector<int>& tuple = t.tuples.at(tid);
             if(Util::isIn(tuple, column_indexes, predicates)){
                 intermediate_result.add(tid);
             }

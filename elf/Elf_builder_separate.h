@@ -52,7 +52,7 @@ class Elf_builder_separate {
         }
     }
 
-    static int32_t max(vector<int>& column){
+    static int32_t max(const vector<int>& column){
         int32_t max = INT_MIN;
         for(int tid : column){
             if(tid>max){
@@ -198,7 +198,7 @@ class Elf_builder_separate {
 	 * @param level - level[value] allows to access all points with that value
 	 */
     vector<vector<int32_t>> buildFirstLevel(){
-        vector<int>& column = this->table.columns[0];//First column
+        const vector<int>& column = this->table.columns[0];//First column
         int size = column.size();
         vector<vector<int32_t>> level(this->max_values[0]+1);//one entry for each value including the largest one (i.e., +1)
 
@@ -219,7 +219,7 @@ class Elf_builder_separate {
 
     vector<SubTree> buildSecondLevel(vector<vector<int32_t>>& last_level) {
         int my_dim = 0 + 1;
-        vector<int>& raw_column = table.columns.at(my_dim);
+        const vector<int>& raw_column = table.columns.at(my_dim);
         size_t dim_max = this->max_values[my_dim] + 1;//including largest value
         vector<SubTree> level;
         write_pointer = this->max_values[0] + 1;    // Assume that we really need all the values
@@ -320,7 +320,7 @@ class Elf_builder_separate {
         return level;
     }
 
-    static vector<vector<int>> distribute(vector<int>& column, vector<int>& node_tids, int dim_max, int my_dim) {
+    static vector<vector<int>> distribute(const vector<int>& column, vector<int>& node_tids, int dim_max, int my_dim) {
         vector<vector<int>> sub_tree_level(dim_max);//Hier optimieren?
         /*for(int i=0;i<dim_max;i++){
             vector<int> temp;

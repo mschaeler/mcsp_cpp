@@ -247,9 +247,9 @@ public:
         ColTable* table = new ColTable(scale);
         //std::cout << table->out() << std::endl;
 
-        if(Config::MATERIALIZE_DATA){
+       /* if(Config::MATERIALIZE_DATA){
             ColTable::materialize(*table, scale);
-        }
+        }*/
 
         t =  dynamic_cast<Table *>(table);
         return t;

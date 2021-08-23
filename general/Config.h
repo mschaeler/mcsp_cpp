@@ -25,5 +25,5 @@ public:
 	 * Defines whether the DBMSs materialize each not jet materialized data set on HDD.
 	 * Note, in case the data set is already on HDD, it is not materialized again.
 	 */
-    const static bool MATERIALIZE_DATA = true;
+    const static bool MATERIALIZE_DATA = false;
 };

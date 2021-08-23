@@ -12,31 +12,20 @@
 class RowTable : public Table{
 
 public:
-    vector<vector<int>> tuples;
-    RowTable(string& name, vector<string>& col_names, vector<vector<int>> data) : Table(name, col_names), tuples(data.size()){
-        for (int i=0; i<data.size(); i++){
-            vector<int> to_copy = data[i];
-            vector<int> copy (to_copy);//should physically copy the vector
-            tuples[i] = copy;
-        }
+    const vector<vector<int>> tuples;
+
+    RowTable(string& name, vector<string>& col_names, vector<vector<int>> data)
+    : Table(name, col_names)
+    , tuples(data)
+    {
+
     }
 
-    RowTable(double s) : Table("lineitem", Util::get_tpch_linetime_column_names()){
-        cout << "RowTable lineitem constructor("<<s<<")";
-        auto begin = chrono::system_clock::now();
-        int size = (int)(Util::NUM_TUPLES_S_ONE*s);
-        int dim  = Util::NUM_DIM_TPCH;
-        srand(Util::seed);
-        vector<vector<int>> data(size);
-        for(int i=0;i<size;i++) {
-            vector<int> tuple = Util::getDataTPCHTuple(s);
-            tuples.push_back(tuple);
-            if(i%1000000==0){
-                cout << i << " ";
-            }
-        }
-        auto end = chrono::system_clock::now();
-        cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
+    RowTable(double s)
+    : Table("lineitem", Util::get_tpch_linetime_column_names())
+    , tuples(Util::getDataTPCH(s))
+    {
+
     }
 
     int size() {return tuples.size();}

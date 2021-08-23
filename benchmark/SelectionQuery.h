@@ -6,7 +6,7 @@
 #define MY_MCSP_SELECTIONQUERY_H
 
 #include <vector>
-#include "Util.h"
+#include "../general/Util.h"
 #include <random>
 
 /**

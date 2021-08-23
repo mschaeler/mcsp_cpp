@@ -12,19 +12,24 @@
 #include <numeric> //accumulate
 class ColTable : public Table{
 public:
-    vector<vector<int>> columns;
-    int num_dim;
+    const vector<vector<int>> columns;
+    const int num_dim;
 
-    ColTable(string& name, vector<string>& col_names, vector<vector<int>> col_data) : Table(name, col_names), columns(col_data.size()), num_dim(col_data.size()){
-        for (int i=0; i<col_data.size(); i++){
-            vector<int> to_copy = col_data[i];
-            vector<int> copy (to_copy);//should physically copy the vector
-            columns[i] = copy;
-        }
+    ColTable(string& name, vector<string>& col_names, vector<vector<int>> col_data)
+    : Table(name, col_names)
+    , columns(col_data.size())
+    , num_dim(col_data.size())
+    {
+
     }
 
-    ColTable(double s): Table("lineitem", Util::get_tpch_linetime_column_names()), num_dim(Util::NUM_DIM_TPCH), columns(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)) ){
-        //Util::getDataTPCHTuple_columnar(columns, s);
+    ColTable(double s)
+    : Table("lineitem", Util::get_tpch_linetime_column_names())
+    , num_dim(Util::NUM_DIM_TPCH)
+    //, columns(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)) )
+    , columns(Util::getDataTPCHTuple_columnar(s))
+    {
+        /*//Util::getDataTPCHTuple_columnar(columns, s);
         if(exists(s)){
             vector<vector<int>> raw_columns = Util::read_columnar_table(get_file(s), num_dim, size());
             for(int c=0; c < num_dim; c++){
@@ -39,10 +44,13 @@ public:
             if(Config::MATERIALIZE_DATA){
                 materialize(*this, s);
             }
-        }
+        }*/
     }
 
-    ColTable(RowTable& r) : Table(r.my_name, r.column_names), columns(r.tuples[0].size()){
+    /*ColTable(RowTable& r)
+    : Table(r.my_name, r.column_names)
+    , columns(r.tuples[0].size())
+    {
         int size = r.size();
         for(int col=0;col<columns.size();col++){
             vector<int> empty_column(size);
@@ -54,7 +62,7 @@ public:
                 columns[col][tid] = tuple[col];
             }
         }
-    }
+    }*/
 
     int size() {return columns[0].size();}
 
@@ -83,7 +91,7 @@ public:
         }
     }
 
-    static bool materialize(ColTable& t, const double scale){
+    /*static bool materialize(ColTable& t, const double scale){
         if(!exists(scale)){
             //create folder
             string file = get_file(scale);
@@ -92,9 +100,10 @@ public:
             return true;
         }
         return false;
-    }
+    }*/
 
     static bool exists(double scale) {
+        return false;
         string file = get_file(scale);
         ifstream f(file.c_str());
         return f.good();

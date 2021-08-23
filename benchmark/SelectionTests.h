@@ -6,7 +6,7 @@
 #define MY_MCSP_SELECTIONTESTS_H
 
 #include "vector"
-#include "DatabaseSystem.h"
+#include "../general/DatabaseSystem.h"
 #include "SelectionQuerySet.h"
 #include "../columnar/MyHyper.h"
 #include <algorithm>    // std::sort std::min
@@ -77,7 +77,7 @@ class SelectionTests {
     /**** Begin Cost Logging stuff ***********/
     static const bool LOG_COST = Config::LOG_COST;
 
-    void reset_cost(){
+    static  void reset_cost(){
         write_cost=0;
         read_cost=0;
     }
@@ -236,6 +236,38 @@ public:
     int num_query_sets;
     int num_queries;
 
+    /**
+     * Mono column constructor
+     * @param _scale
+     * @param _num_query_sets
+     * @param _num_queries
+     * @param _max_column
+     */
+    SelectionTests(double _scale, vector<double> selectivities, int _num_queries, int max_column)
+    : scale(_scale)
+    , num_query_sets(selectivities.size())
+    , num_queries(_num_queries)
+    {
+        rand.seed(123);
+        for(int column=0; column<max_column;column++) {
+            vector<SelectionQuerySet> queries;
+            for(int s=0; s<selectivities.size();s++) {
+                SelectionQuerySet set(column, selectivities.at(s), scale, num_queries, rand);
+                queries.push_back(set);
+            }
+            this->all_queries.push_back(queries);
+        }
+        cout << "Created" << all_queries.size() << " p values" << endl;
+        for(vector<SelectionQuerySet> set : all_queries) {
+            cout << "Printing statistics for " << set.size() << " query sets" << endl;
+            SelectionQuerySet::statisticsQuerySet(set);
+        }
+    }
+
+
+    /**
+     * Common MCSP constructor
+     */
     SelectionTests(double _scale, int _num_query_sets, int _num_queries)
     : scale(_scale)
     , num_query_sets(_num_query_sets)
@@ -260,6 +292,92 @@ public:
             SelectionQuerySet::statisticsQuerySet(set);
         }
     }
+
+    static void run_mono_column_benchmark(vector<DatabaseSystem*> all_dbms, const double scale, int num_queries, bool repeat){
+        vector<double> default_selectivities = {//XXX
+                1,1.0/2.0
+                , 1.0/4.0
+                , 1.0/8.0
+                , 1.0/16.0
+                , 1.0/32.0
+                , 1.0/64.0
+                , 1.0/128.0
+                , 1.0/256.0
+        };
+        cout << "run_mono_column_benchmark(DatabaseSystem[], scale="<<scale<<",sel="<<Util::to_string(default_selectivities)<<") num_queries="<<num_queries << endl;
+        int max_column = 10;//generate queries for all columns
+        SelectionTests tester(scale, default_selectivities, num_queries, max_column);
+
+        do {
+            for(int d=0;d<all_dbms.size();d++) {
+                DatabaseSystem* dbs = all_dbms.at(d);
+                cout << "\n"<<dbs->name()<<"\n";
+                Table& t=*dbs->get_TPC_H_lineitem(scale);
+
+                string header = "\t";
+
+                for(double s : default_selectivities) {
+                    header+=to_string(s)+"\t";
+                }
+                if(LOG_COST) {
+                    header+="\t";
+                    for(double s : default_selectivities) {
+                        header+="read_"+to_string(s)+"\t";
+                    }
+                    header+="\t";
+                    for(double s : default_selectivities) {
+                        header+="write_"+to_string(s)+"\t";
+                    }
+                    header+="check_sum";
+                }
+                cout << header << endl;
+
+                for(int column=0; column<max_column;column++) {
+                    //only use if DISPLAY_COST == true
+                    vector<uint64_t> read_cost_vec(default_selectivities.size());
+                    vector<uint64_t> write_cost_vec(default_selectivities.size());
+
+                    cout << column << "\t";
+                    uint64_t check_sum = 0;
+                    for(int s=0; s<default_selectivities.size();s++) {
+                        SelectionQuerySet& set = tester.all_queries.at(column).at(s);
+                        if(LOG_COST) {
+                            reset_cost();
+                        }
+                        auto start = chrono::system_clock::now();
+                        for(auto& query : set.myQueries) {
+                            //cout << "inner loop" << endl;
+                            //System.out.println(query);
+                            auto& columns = query.getColumns();
+                            auto& predicates = query.getPredicate();
+                            auto& selectivities = query.getSelectivities();
+                            auto& synopsis = dbs->select(t, columns, predicates,selectivities);
+                            check_sum += synopsis.size();
+                        }
+                        auto stop = chrono::system_clock::now();
+                        cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() << "\t" << flush;
+                        if(LOG_COST) {
+                            read_cost_vec.at(s)  += read_cost;
+                            write_cost_vec.at(s) += write_cost;
+                        }
+                    }
+                    if(LOG_COST) {
+                        cout << "\t";
+                        for(int s=0; s<default_selectivities.size();s++) {
+                            cout << to_string(read_cost_vec.at(s)/num_queries)<<"\t";
+                        }
+                        cout << "\t";
+                        for(int s=0; s<default_selectivities.size();s++) {
+                            cout << to_string(write_cost_vec.at(s)/num_queries)<<"\t";
+                        }
+                    }
+                    cout << check_sum << endl;
+                }
+                t.~Table();
+            }
+        }while(repeat);
+    }
+
 
     void p_benchmark(vector<DatabaseSystem*> all_dbms, bool repeat) {
         do {
