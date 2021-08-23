@@ -12,68 +12,6 @@
 #include "columnar/MyHyper.h"
 #include "elf/Elf_Dbms_Lvl.h"
 
-/*
-void execute_selection(DatabaseSystem* dbms, Table* t, vector<int>& columns, vector<vector<int>>& predicates){
-    Synopsis* result = dbms->select(*t, columns, predicates);
-    std::cout << "result size = " << result->size() << std::endl;
-}
-
-void execute_mono_selection(DatabaseSystem* dbms, Table* t){
-    std::cout << "execute_mono_selection(): " << dbms->name()<<std::endl;
-    vector<int> columns = {1};
-    vector<vector<int>> predicates = {{1, 10}};
-    auto begin = chrono::system_clock::now();
-    for(int i=0;i<5;i++)
-        execute_selection(dbms,t,columns,predicates);
-    auto end = chrono::system_clock::now();
-    cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
-}
-
-void execute_mcsp_selection(DatabaseSystem* dbms, Table* t){
-    std::cout << "execute_mcsp_selection(): " << dbms->name()<<std::endl;
-    vector<int> columns = {1,2};
-    vector<vector<int>> predicates = {{1,10},{2,3}};
-    auto begin = chrono::system_clock::now();
-    for(int i=0;i<5;i++)
-        execute_selection(dbms,t,columns,predicates);
-    auto end = chrono::system_clock::now();
-    cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
-}
-
-void run_my_hyper(double scale){
-    DatabaseSystem* dbms;
-    Table* t;
-
-    string t_name = "Test Table";
-    vector<string> vec = Util::get_tpch_linetime_column_names();
-
-
-    vector<vector<int>> data = Util::getDataTPCH(scale);
-    RowTable* row_table = new RowTable(t_name, vec, data);
-    std::cout << row_table->out() << std::endl;
-
-    dbms = new MyRowiseHyper();
-    t =  dynamic_cast<Table *>(row_table);
-    execute_mono_selection(dbms, t);
-    execute_mcsp_selection(dbms, t);
-}
-
-void run_my_hyper_2(double scale){
-    DatabaseSystem* dbms;
-    Table* t;
-
-    string t_name = "Test Table";
-    vector<string> vec = Util::get_tpch_linetime_column_names();
-    vector<int>* data_lin  = Util::getDataTPCH_rowise(scale);
-    RowTable_2* tab_2 = new RowTable_2(t_name, vec, *data_lin);
-    cout << tab_2->out() << endl;
-    t =  dynamic_cast<Table *>(tab_2);
-    dbms = new MyRowiseHyper_2();
-    execute_mono_selection(dbms, t);
-    execute_mcsp_selection(dbms, t);
-    delete data_lin;
-}*/
-
 void run_p_benchmark(double scale){
     DatabaseSystem* dbms;
     Table* t;
@@ -118,7 +56,7 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << endl;
-    double scale = 0.1;
+    double scale = 10.0;
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 

@@ -139,6 +139,7 @@ public:
     }
 
     static vector<vector<int>> getDataTPCHTuple_columnar(double s){
+        cout << "Util::getDataTPCHTuple_columnar(s="<<s<<")";
         vector<vector<int>> all_data(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)));
         getDataTPCHTuple_columnar(all_data, s);
         return all_data;//by value
