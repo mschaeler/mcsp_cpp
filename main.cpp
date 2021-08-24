@@ -61,7 +61,7 @@ int main() {
     //test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
-    vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new MyRowiseHyper(), new Elf_Dbms_Lvl()};
+    vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new Elf_Dbms_Lvl()};
     SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
 
     //run_p_benchmark(scale);

@@ -15,7 +15,9 @@ typedef int32_t elf_pointer;
 
 class Elf : public Table{
 public:
-    Elf(string& name, vector<string>& col_names);
+    Elf(string& name, vector<string>& col_names) : Table(name, col_names) {
+
+    }
     static const int32_t ELF_TYPE_IS_PRE_ORDER_ORDER_ELF = 0x0;
     static const int32_t ELF_TYPE_IS_LEVEL_ORDER_ELF = 0x1;
     static const int32_t ELF_TYPE_IS_LEVEL_ORDER_ELF_SEPERATED = 0x2;
