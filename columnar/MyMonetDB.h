@@ -58,7 +58,7 @@ protected:
             }
         }
         if(LOG_COST){
-            read_cost  += size;//size of hte synopsis
+            read_cost  += 2*size;//read tid from synopsis and column value
             write_cost += intermediate_result.size();//size of result, i.e., new synopsis
         }
         return s;

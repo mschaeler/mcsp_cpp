@@ -24,7 +24,7 @@ class MyRowiseHyper : public DatabaseSystem{
             }
         }
         if(LOG_COST){
-            read_cost += size*t.tuples.at(0).size();//num_tuples (i.e., size) * tuple size (of the first tuple)
+            read_cost  += size;//num_predicates (i.e., 1) * size
             write_cost += intermediate_result.size();
         }
         return intermediate_result;
@@ -41,7 +41,7 @@ class MyRowiseHyper : public DatabaseSystem{
             }
         }
         if(LOG_COST){
-            read_cost += size*t.tuples.at(0).size();//num_tuples (i.e., size) * tuple size (of the first tuple)
+            read_cost  += size*column_indexes.size();//for each attribute read, i.e., we do not distinguish in cache hit or miss
             write_cost += intermediate_result.size();
         }
         return intermediate_result;

@@ -214,7 +214,7 @@ protected:
         for(int p=rest_to_check;p<columns.size();p++) {
             const int value = get_attribute_monolist(start_list, start_level, columns.at(p));
             survives &= Util::isIn(value, predicates.at(p).at(0), predicates.at(p).at(1));
-            if(LOG_COST){read_cost+=num_dim-start_level;}//XXX - size of the entire monolist
+            //if(LOG_COST){read_cost+=num_dim-start_level;}//XXX we only count the number of attributes accessed. this is done in get_attribute_monolist()
         }
         return survives;
     }
