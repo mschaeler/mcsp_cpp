@@ -204,7 +204,7 @@ class Elf_builder_separate {
             if(start_list_next_dim!=Elf::EMPTY_ROOT_NODE){//non-dense data in first dimension
                 if(!points_to_monolist(start_list_next_dim)) {
                     write_cuttoff(start_list_next_dim, current_tid_offset);
-                    //determine_and_write_cutoffs(start_list_next_dim, FIRST_DIM+1);
+                    determine_and_write_cutoffs(start_list_next_dim, 1);
                 } else {
                     cout << "determine_and_write_cutoffs() - monolist in first dim @" << e << endl;
                 }
@@ -246,6 +246,9 @@ class Elf_builder_separate {
                 start_list_next_dim &= Elf::RECOVER_MASK;
                 const int tid = get_tid_from_monolist(start_list_next_dim, level+1);
                 tids_in_elf_order.at(current_tid_offset)= tid;
+                if(tids_in_elf_order.at(current_tid_offset)!=tid){
+                    cout << tid << endl;
+                }
                 tids_level.at(current_tid_offset)       = level+1;//mono list starts in the next level
                 current_tid_offset++;
             } else {
@@ -256,8 +259,8 @@ class Elf_builder_separate {
     }
 
     Elf_Table_Lvl_Cutoffs* create_elf_instance_with_cuttoffs(){
-        tids_in_elf_order.reserve(table.size());
-        tids_level.reserve(table.size());
+        tids_in_elf_order.resize(table.size(), -1);
+        tids_level.resize(table.size(),-1);
         determine_and_write_cutoffs();
 
         Elf_Table_Lvl_Cutoffs* to_return = new Elf_Table_Lvl_Cutoffs(
@@ -477,7 +480,9 @@ public:
         , values(t.size()*num_dim)
         , pointer(t.size()*num_dim)
         //, mono_list_array(t.size()*num_dim)
-            , mono_list_array()
+        , mono_list_array()
+        , tids_in_elf_order(0)
+        , tids_level(0)
     {
 
 

@@ -40,15 +40,17 @@ public:
         //Nothing to do
         cout << "values.size()=" << values.size() << "pointer.size()=" << pointer.size() << "mono_lists.size()=" << mono_lists.size() << endl;
         cout << "levels="<< Util::to_string(levels) << "levels_mono_lists=" << Util::to_string(levels_mono_lists) << endl;
-        if(SAVE_MODE){
-            //TODO
-        }
+        cout << "tids_in_elf_order.size()=" << tids_in_elf_order.size() << " tids_level.size()=" << tids_level.size() << endl;
     }
 
     void check_cutoffs(ColTable& table){
-        cout << "check_cutoffs(ColTable&)";
+        cout << "check_cutoffs(ColTable&) checking tid order";
         const int num_dim = table.num_dim;
         vector<int> point(num_dim);
+        auto sum_of_elems = std::accumulate(tids_in_elf_order.begin(), tids_in_elf_order.end(), 0);
+        cout << " check_sum=" << sum_of_elems;
+        sum_of_elems = std::accumulate(tids_level.begin(), tids_level.end(), 0);
+        cout << " check_sum=" << sum_of_elems;
         for(int i=1;i<tids_in_elf_order.size();i++) {
             int my_tid = tids_in_elf_order.at(i);
             int s_tid = tids_in_elf_order.at(i - 1);
@@ -72,6 +74,15 @@ public:
             }
         }
         cout << " [Done]" << endl;
+        cout << " checking cutoffs" << endl;
+        for(elf_pointer elem_offset = 0;elem_offset<level_stop(0);elem_offset++){
+            elf_pointer elem_pointer = get_pointer(elem_offset);
+            if(points_to_monolist((elem_pointer))){
+                cout << "Monolist in first level @" << elem_offset << endl;
+            }else{
+                check_cutoff_node(elem_pointer, 1);
+            }
+        }
     }
 
     /**
@@ -379,6 +390,46 @@ public:
 
     inline bool is_last_elem_in_level(const elf_pointer elem_offset, const int elem_level) const {
         return level_stop(elem_level)==elem_offset+1;
+    }
+
+    void check_cutoff_node(const elf_pointer node_offset, const int my_level){
+        if(!is_node_length_offset(node_offset)){
+            cout << "Error get_first_tid_in_subtre() called for node_start not element@" << node_offset << endl;
+        }
+        const int node_length = get_node_length(node_offset);
+        elf_pointer cutoff = cutoff_start(node_offset);
+        int tid_by_cutoff = tids_in_elf_order.at(cutoff);
+        int tid_by_traversal = get_first_tid_in_subtree(node_offset, my_level);
+        if(tid_by_cutoff!=tid_by_traversal){
+            cout << "Error tid_by_cutoff!=tid_by_traversal @" << node_offset << " in level " << my_level << endl;
+        }
+        if(SAVE_MODE){
+            if(tid_by_cutoff==tid_by_traversal){
+                cout << "tid_by_cutoff=tid_by_traversal @" << node_offset << " in level " << my_level << endl;
+            }
+        }
+
+        for(int elem=0;elem<node_length;elem++){
+            elf_pointer elem_offset = node_offset+1+elem;//+1 for length
+            elf_pointer elem_pointer = get_pointer(elem_offset);//sub tree root node
+            if(!points_to_monolist(elem_pointer)){
+                check_cutoff_node(elem_pointer,my_level+1);
+            }
+        }
+    }
+
+    int get_first_tid_in_subtree(const elf_pointer node_offset, const int my_level){
+        if(!is_node_length_offset(node_offset)){
+            cout << "Error get_first_tid_in_subtre() called for normal element@" << node_offset << endl;
+        }
+        elf_pointer elem_pointer = get_pointer(node_offset+1);//first element in this node
+        if(points_to_monolist(elem_pointer)){
+            elem_pointer &= RECOVER_MASK;
+            int tid = get_tid_from_monolist(elem_pointer, my_level+1);
+            return tid;
+        }else{
+            return get_first_tid_in_subtree(elem_pointer, my_level+1);
+        }
     }
 };
 

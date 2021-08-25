@@ -53,6 +53,7 @@ private:
 
         if(level == FIRST_DIM) {//for the first dim everything is special
             elf.select_1_first_level(lower, upper, result_buffer);
+            return;
         }
 
         /**************************************************************************************
@@ -72,7 +73,7 @@ private:
         int stop_level = elf.level_stop(level);
         int offset     = elf.level_start(level);
 
-        //elf.select_1(offset, stop_level, level, result_buffer, lower, upper);
+        elf.select_1(offset, stop_level, level, result_buffer, lower, upper);
     }
 };
 
