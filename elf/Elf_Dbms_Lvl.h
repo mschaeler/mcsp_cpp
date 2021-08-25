@@ -8,6 +8,7 @@
 #include "Elf_builder_separate.h"
 
 class Elf_Dbms_Lvl : public DatabaseSystem{
+protected:
     static const elf_pointer 	LAST_ENTRY_MASK	 = Elf::LAST_ENTRY_MASK;//0b10000000000000000000000000000000
     static const elf_pointer 	RECOVER_MASK	 = Elf::RECOVER_MASK;//0b01111111111111111111111111111111
     static const elf_pointer 	EMPTY_ROOT_NODE  = Elf::EMPTY_ROOT_NODE;
@@ -20,7 +21,7 @@ class Elf_Dbms_Lvl : public DatabaseSystem{
 
 
     Synopsis result_buffer;
-
+private:
     Synopsis& select(Elf_table_lvl_seperate& t, const vector<int>& column_indexes, const vector<vector<int>>& predicates){
         result_buffer.clear();//Here we clear hte buffer s.t. we do not care anywhere later
         if(column_indexes.size()==1){
