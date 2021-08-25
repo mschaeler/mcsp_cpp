@@ -38,6 +38,8 @@ void test_something(double scale){
     cout << "test_something(double scale)" << scale << endl;
     ColTable t_loaded(scale);
 
+    auto* elf = Elf_builder_separate::build_with_cuttoffs(t_loaded);
+
     string name = "lineitem";
     vector<string> col_names = Util::get_tpch_linetime_column_names();
     vector<vector<int>> data(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*scale)));
@@ -56,9 +58,9 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << endl;
-    double scale = 10.0;
+    double scale = 0.1;
     cout << "scale="<<scale<<endl;
-    //test_something(0.1);
+    test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
     vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new Elf_Dbms_Lvl()};

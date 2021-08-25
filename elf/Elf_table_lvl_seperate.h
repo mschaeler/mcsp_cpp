@@ -6,6 +6,7 @@
 #define MY_MCSP_ELF_TABLE_LVL_SEPERATE_H
 
 class Elf_table_lvl_seperate : public Elf {
+protected:
     const vector<elf_pointer> levels;
     const vector<elf_pointer> levels_mono_lists;
 
@@ -72,7 +73,6 @@ class Elf_table_lvl_seperate : public Elf {
         return values.at(offset)<0;
     }
 
-protected:
     /**
      * Returns the dim_to_return'th attribute values of the tuples. In contrast to the standard Elf the mono lists have an extra array and are not part of the ELF array.
      *

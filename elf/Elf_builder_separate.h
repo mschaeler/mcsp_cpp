@@ -8,6 +8,7 @@
 #include "../columnar/ColTable.h"
 #include "Elf.h"
 #include "Elf_table_lvl_seperate.h"
+#include "Elf_Table_Lvl_Cutoffs.h"
 
 class BecomesMonoList{
 public:
@@ -34,6 +35,11 @@ public:
 class Elf_builder_separate {
     ColTable& table;
     int num_dim;
+    /** for writing the cutoffs**/
+    int32_t current_tid_offset = 0;
+    vector<int32_t> tids_in_elf_order;
+    vector<int32_t> tids_level;
+
     int32_t write_pointer = 0;
 
     vector<int32_t> values;
@@ -80,7 +86,7 @@ class Elf_builder_separate {
         cout << "test_exact() [DONE]"<< endl;
     }
 
-    Elf_table_lvl_seperate* build(){
+    void build(){
         cout << "Elf_builder_separate.build() " << table.size() << endl;
         auto begin = chrono::system_clock::now();
 
@@ -155,6 +161,8 @@ class Elf_builder_separate {
         auto end = chrono::system_clock::now();
 
         cout << "Elf_separate.build() " <<table.size()<< " in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count()<<"  ms" << endl;
+    }
+    Elf_table_lvl_seperate* create_elf_instance(){
         Elf_table_lvl_seperate* to_return = new Elf_table_lvl_seperate(
                 this->table.my_name
                 , this->table.column_names
@@ -164,9 +172,109 @@ class Elf_builder_separate {
                 , this->levels
                 , this->levels_mono_lists
                 , this->num_dim
-                );
+        );
         if(Elf::SAVE_MODE){
             test_exact(this->table,to_return);
+        }
+        return to_return;
+    }
+
+    inline bool points_to_monolist(elf_pointer pointer) const {
+        return (pointer<0) ? true : false;//msb is set, i.e., pointer is negative
+    }
+
+    int get_node_size(int start_node) {
+        int length = values.at(start_node);
+        return length & Elf::RECOVER_MASK;//un mask
+    }
+
+    int get_tid_from_monolist(int start_list, int start_level) {
+        return mono_list_array.at(start_list+table.num_dim-start_level);
+    }
+
+    //find tids in preorder traversal
+    void determine_and_write_cutoffs() {
+        cout << "determine_and_write_cutoffs()" << endl;
+        int start = 0;//by definition
+        int stop  = levels.at(0);
+
+        for(int e=start;e<stop;e++) {//for each entry in the root
+            int start_list_next_dim = pointer.at(e);
+
+            if(start_list_next_dim!=Elf::EMPTY_ROOT_NODE){//non-dense data in first dimension
+                if(!points_to_monolist(start_list_next_dim)) {
+                    write_cuttoff(start_list_next_dim, current_tid_offset);
+                    //determine_and_write_cutoffs(start_list_next_dim, FIRST_DIM+1);
+                } else {
+                    cout << "determine_and_write_cutoffs() - monolist in first dim @" << e << endl;
+                }
+            }
+        }
+    }
+
+    void write_cuttoff(const int start_list, const int current_tid_offset) {
+        if(Elf::SAVE_MODE) {
+            int temp_cuttoff = pointer.at(start_list);
+            if(temp_cuttoff!=0 && temp_cuttoff!=current_tid_offset) {//may be loaded cutt ofss from file
+                cout << "write_cuttoff(" << start_list << "," << current_tid_offset << ") write to non empty position and existing cutoff incorrect" << endl;
+            }
+        }
+        pointer.at(start_list) = current_tid_offset;
+    }
+
+    /**
+     * Processes one node and recursively propagates to next level in pre order traversal.
+     * We use pre-order traversal, since we then find tids according to Elf sort order.
+     *
+     * @param start_list
+     * @return - the total number of tids, we have already seen.
+     */
+    void determine_and_write_cutoffs(const int start_list, const int level){
+        const int length = get_node_size(start_list);
+
+        /*if(Elf::SAVE_MODE) {
+            if(level!=get_level(start_list)) {
+                cout << "determine_and_write_cutoffs(int,int) level!=getLevel()" << endl;
+            }
+        }*/
+
+        for(int elem=0;elem<length;elem++){
+            const int elem_offset = start_list+Elf_Table_Lvl_Cutoffs::NODE_HEAD_LENGTH+elem;//+1 for length
+            int start_list_next_dim = pointer.at(elem_offset);
+            if(points_to_monolist(start_list_next_dim)) {
+                //no cutoff to write
+                start_list_next_dim &= Elf::RECOVER_MASK;
+                const int tid = get_tid_from_monolist(start_list_next_dim, level+1);
+                tids_in_elf_order.at(current_tid_offset)= tid;
+                tids_level.at(current_tid_offset)       = level+1;//mono list starts in the next level
+                current_tid_offset++;
+            } else {
+                write_cuttoff(start_list_next_dim, current_tid_offset);
+                determine_and_write_cutoffs(start_list_next_dim, level+1);
+            }
+        }
+    }
+
+    Elf_Table_Lvl_Cutoffs* create_elf_instance_with_cuttoffs(){
+        tids_in_elf_order.reserve(table.size());
+        tids_level.reserve(table.size());
+        determine_and_write_cutoffs();
+
+        Elf_Table_Lvl_Cutoffs* to_return = new Elf_Table_Lvl_Cutoffs(
+                this->table.my_name
+                , this->table.column_names
+                , this->values
+                , this->pointer
+                , this->mono_list_array
+                , this->levels
+                , this->levels_mono_lists
+                , this->num_dim
+                , this->tids_in_elf_order
+                , this->tids_level
+        );
+        if(Elf::SAVE_MODE){
+            test_exact(this->table,to_return);
+            to_return->check_cutoffs(this->table);
         }
         return to_return;
     }
@@ -386,7 +494,15 @@ public:
     static Elf_table_lvl_seperate* build(ColTable& table){
         Elf_builder_separate separate (table);
         cout << "build()" << endl;
-        return separate.build();
+        separate.build();
+        return separate.create_elf_instance();
+    }
+    static Elf_Table_Lvl_Cutoffs* build_with_cuttoffs(ColTable& table){
+        Elf_builder_separate separate (table);
+        cout << "build()" << endl;
+        separate.build();
+        Elf_Table_Lvl_Cutoffs* elf = separate.create_elf_instance_with_cuttoffs();
+        return elf;
     }
 };
 
