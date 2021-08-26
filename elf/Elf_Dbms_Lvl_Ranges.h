@@ -37,6 +37,43 @@ public:
     }
 
 private:
+    /**
+     * Operator executing a selection on a single column (i.e., level)
+     * SQL equivalent: Select row_id from elf where level in [lower,upper]
+     * The name select_1(..) is to be conform with the other DBMS implementation.
+     *
+     * @param elf - the table
+     * @param level - the level where we intend to select
+     * @param lower - where level in [*lower*,upper]
+     * @param upper - where level in [lower,*upper*]
+     * @return - a tid list of all ids satisfying the predicate
+     */
+    void select_1(const Elf_Table_Lvl_Cutoffs& elf, const int level, const int lower, const int upper) {
+
+        if(level == FIRST_DIM) {//for the first dim everything is special
+            elf.select_1_first_level(lower, upper, result_buffer);
+            return;
+        }
+
+        /**************************************************************************************
+         * (1) There may be Mono Lists starting before the level referring to column_index.
+         * We need to scan them all. We need to do this first s.t. the TID order
+         * follows the level order assumption
+         **************************************************************************************/
+
+        for(int l=FIRST_DIM;l<=level;l++){
+            elf.scan_mono_list_level(l, lower, upper, result_buffer, level);
+        }
+
+        /**************************************************************************************
+         * (2) Scan the entire level where the selection is done (i.e., column_index)
+         **************************************************************************************/
+
+        int stop_level = elf.level_stop(level);
+        int start_level= elf.level_start(level);
+
+        elf.scan_mono_column_cutoff_ranges(start_level, stop_level, level, result_buffer, lower, upper);
+    }
 };
 
 

@@ -374,6 +374,7 @@ public:
                     cout << check_sum << endl;
                 }
                 t.~Table();
+                delete dbs;//the snyopsis must go away
             }
         }while(repeat);
     }
