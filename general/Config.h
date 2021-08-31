@@ -20,7 +20,7 @@ public:
 	 * If set true the read and write costs are recorded and displayed in the benchmark.
 	 * Note, displaying costs may have considerable negative impact on run time and it may affect DBMSs differently.
 	 */
-    const static bool LOG_COST   = true;
+    const static bool LOG_COST   = false;
     /**
 	 * Defines whether the DBMSs materialize each not jet materialized data set on HDD.
 	 * Note, in case the data set is already on HDD, it is not materialized again.

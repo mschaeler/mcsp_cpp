@@ -506,6 +506,8 @@ public:
                     if(LOG_COST){write_cost++;}
 
                 }
+            }else if(elem_val > upper){
+                return start_node+NODE_HEAD_LENGTH+length;
             }
         }
         return start_node+NODE_HEAD_LENGTH+length;//s.t. it points to the next node

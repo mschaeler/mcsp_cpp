@@ -12,6 +12,8 @@ private:
     const vector<int> tids_in_elf_order;
     /** Indicates the level where mono list containing the corresponding point starts*/
     const vector<int> tids_level;//TODO byte[]?
+    const int first_level_with_monolists;
+
 public:
 /*    Elf_Table_Lvl_Cutoffs(Elf_table_lvl_seperate& elf)
     : Elf_table_lvl_seperate(elf.my_name, elf.column_names, elf.values, elf.pointer , elf.mono_lists, elf.levels, elf.levels_mono_lists, elf.num_dim)
@@ -36,6 +38,7 @@ public:
     ): Elf_table_lvl_seperate(name, col_names, _values, _pointer , _mono_lists, _levels, _levels_mono_lists, _num_dim)
     , tids_in_elf_order(_tids_in_elf_order)
     , tids_level(_tids_level)
+    , first_level_with_monolists(get_first_level_with_monolists(_mono_lists))
     {
         //Nothing to do
         cout << "values.size()=" << values.size() << "pointer.size()=" << pointer.size() << "mono_lists.size()=" << mono_lists.size() << endl;
@@ -167,42 +170,43 @@ public:
     ) const {
         elf_pointer offset = start_level;
         while (offset<stop_level) {//for each node in this level
-
-            {//inlined node processing. I need to this, because I need access to the next node sometimes...
-                const elf_pointer start_list = offset;
-                const elf_pointer length = get_node_size(start_list);
-                /**
-                 * For each elem in this node, Except the last One. There the cutoff is different.
-                 * Thus length-1
-                 */
-                for(int elem=0;elem<length-1;elem++){
-                    const elf_pointer elem_offset = start_list+NODE_HEAD_LENGTH+elem;//+NODE_HEAD_LENGTH for explicit length
-                    int elem_val = get_value(elem_offset);
-                    if(Util::isIn(elem_val, lower, upper)) {
-                        collect_tids_cuttoff(elem_offset, elem_offset+1, level, tids);
-                    }
-                }
-
-                //Last elem separately, because the cuttoff is different. I cannot simply use the cuttoff of next level, due to non density issue
-                const elf_pointer elem_offset 	= start_list+NODE_HEAD_LENGTH+length-1;//+NODE_HEAD_LENGTH for explicit length
-                int elem_val = get_value(elem_offset);
-
-                if(Util::isIn(elem_val, lower, upper)) {
-                    int elem_pointer = get_pointer(elem_offset);
-                    if(points_to_monolist(elem_pointer)) {
-                        elem_pointer&=RECOVER_MASK;
-                        int tid = get_tid_from_monolist(elem_pointer, level+1);
-                        tids.add(tid);
-                        if(LOG_COST) {write_cost++;}
-                    }else {
-                        collect_tids_cuttoff_last_node_element(elem_offset, elem_pointer, level, tids);
-                    }
-                }
-                offset += NODE_HEAD_LENGTH+length;//point to next elem
-            }
+            offset = select_1_node(offset, level, lower, upper, tids);
         }
     }
 private:
+
+    elf_pointer select_1_node(const elf_pointer node_offset, const int level, const int lower, const int upper, Synopsis& tids) const {//inlined node processing. I need to this, because I need access to the next node sometimes...
+        const elf_pointer length = get_node_size(node_offset);
+        /**
+         * For each elem in this node, Except the last One. There the cutoff is different.
+         * Thus length-1
+         */
+        for(int elem=0;elem<length-1;elem++){
+            const elf_pointer elem_offset = node_offset+NODE_HEAD_LENGTH+elem;//+NODE_HEAD_LENGTH for explicit length
+            int elem_val = get_value(elem_offset);
+            if(Util::isIn(elem_val, lower, upper)) {
+                collect_tids_cuttoff(elem_offset, elem_offset+1, level, tids);
+            }
+        }
+
+        //Last elem separately, because the cuttoff is different. I cannot simply use the cuttoff of next level, due to non density issue
+        const elf_pointer elem_offset 	= node_offset+NODE_HEAD_LENGTH+length-1;//+NODE_HEAD_LENGTH for explicit length
+        int elem_val = get_value(elem_offset);
+
+        if(Util::isIn(elem_val, lower, upper)) {
+            int elem_pointer = get_pointer(elem_offset);
+            if(points_to_monolist(elem_pointer)) {
+                elem_pointer&=RECOVER_MASK;
+                int tid = get_tid_from_monolist(elem_pointer, level+1);
+                tids.add(tid);
+                if(LOG_COST) {write_cost++;}
+            }else {
+                collect_tids_cuttoff_last_node_element(elem_offset, elem_pointer, level, tids);
+            }
+        }
+        return node_offset + NODE_HEAD_LENGTH+length;//point to next elem
+    }
+
     /**
      * Collects all tids referring to this subtree using cutoffs. It must not be called for the last element in a node.
      * Otherwise, we may see the non-density bug.
@@ -328,13 +332,19 @@ private:
         /** Index in this.tids_in_elf_order[] of the first tid in  this sub tree.*/
         const int from 	= cutoff_start(node_offset);
         const int to 	= tids_in_elf_order.size();
-
-        for (int i = from; i < to; i++) {
-            if(tids_level.at(i)>level) {//we look for all tids deeper then this level
+        if(level<first_level_with_monolists){
+            for (int i = from; i < to; i++) {
                 result_tids.add(tids_in_elf_order.at(i));
-                if(LOG_COST){write_cost++;}
+                if(LOG_COST){read_cost+=1;}//XXX +1 we read tids_level  array and write the tid (so we do not really look at the tid)
             }
-            if(LOG_COST){read_cost+=2;}//XXX +2 we read the tid array and the level array
+        }else{
+            for (int i = from; i < to; i++) {
+                if(tids_level.at(i)>level) {//we look for all tids deeper than this level
+                    result_tids.add(tids_in_elf_order.at(i));
+                    if(LOG_COST){write_cost++;}
+                }
+                if(LOG_COST){read_cost+=1;}//XXX +1 we read tids_level  array and write the tid (so we do not really look at the tid)
+            }
         }
     }
 
@@ -415,9 +425,9 @@ public:
                 if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
                     if(Util::isIn(elem_val, lower, upper)) {
                         // We found a result run
-                        int elem_pointer = get_pointer(elem_offset);
+                        elf_pointer elem_pointer = get_pointer(elem_offset);
                         if(points_to_monolist(elem_pointer)) {
-                            // We do not start result runs at MonoLists....
+                            // We do not start result runs at MonoLists, since they don't have cutoffs in my implementation.
                             elem_pointer&=RECOVER_MASK;
                             int tid = get_tid_from_monolist(elem_pointer, level+1);
                             tids.add(tid);
@@ -453,11 +463,13 @@ public:
         }
     }
 private:
-    /************************************************************************************************************************
-     * Ok, we have a result run. Let's materialize it. That is, we either found a element not satisfying the predicate	*
-     * or hit the level end. The latter case is the reasons for the break above. In any case we determine the first tid not *
-     * in the result run.																									*
-     ************************************************************************************************************************/
+    /**************************************************************************************************************************
+     * Ok, we have a result run starting @elem_pointer_where_run_start. The first element not in the run is elem_offset.      *
+     * Let's materialize it. elem_offset may refer to a normal element or a mono list. So, we have two cases:                 *
+     * (1) elem_offset is MonoList start: determine its tid and then copy every tid from cutoff(elem_pointer_where_run_start) *
+     * until hitting that tid (exclusively)                                                                                   *
+     * (2) elem_offset is normal node: default case, use both cutoffs and copy the tids between.							  *
+     **************************************************************************************************************************/
     void materialize_run(const elf_pointer elem_pointer_where_run_start, const elf_pointer elem_offset, const int level, Synopsis& tids) const {
         int first_tid_not_in_run;
         elf_pointer elem_pointer = get_pointer(elem_offset);
@@ -465,10 +477,12 @@ private:
             elem_pointer&=RECOVER_MASK;
             first_tid_not_in_run = get_tid_from_monolist(elem_pointer, level+1);
             get_tids_elem_with_known_first_tid_not_in_result(elem_pointer_where_run_start, first_tid_not_in_run, tids, level);
-            //System.out.println("Result after run materialization mono list: "+tids.size() + " until "+elem_offset);
         }else{
-            get_tids_elem(elem_pointer_where_run_start, elem_pointer, tids, level);
-            //System.out.println("Result after run materialization : "+tids.size() + " until "+elem_offset+" call("+elem_pointer_where_run_start+", "+elem_pointer+")");
+            if(level < first_level_with_monolists){
+                get_tids_elem(elem_pointer_where_run_start, elem_pointer, tids);
+            }else{
+                get_tids_elem(elem_pointer_where_run_start, elem_pointer, tids, level);
+            }
         }
     }
 
@@ -595,6 +609,20 @@ private:
         }else{
             return get_first_tid_in_subtree(elem_pointer, my_level+1);
         }
+    }
+
+    /**
+    * Returns the first level having mono list. The pointer to this mono list in the level above. The main reason for this function is to avoid the non-density bug.
+    * @return
+     */
+    static int get_first_level_with_monolists(const vector<int>& mono_list_level) {
+        for(int level=1;level<mono_list_level.size();level++) {
+            if(mono_list_level.at(level)>0) {
+                return level;
+            }
+        }
+        cout << "get_first_level_with_monolists() - did not find first level with mono lists" << endl;
+        return NOT_FOUND;
     }
 };
 
