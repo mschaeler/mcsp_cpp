@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <numeric> //accumulate
+#include <algorithm>//sort
+
 class ColTable : public Table{
 public:
     const vector<vector<int>> columns;
@@ -168,6 +170,59 @@ public:
         return is_equal;
     }
 
+};
+
+struct value_tid{
+    int value;
+    int tid;
+    bool operator < (const value_tid& str) const
+    {
+        return (value < str.value);
+    }
+};
+
+class ColTable_Indexed : public ColTable{
+public:
+    vector<vector<int>> sorted_columns;
+    vector<vector<int>> sorted_columns_original_tids;
+
+    ColTable_Indexed(ColTable& t) :
+    ColTable(t.my_name, t.column_names, t.columns)
+    , sorted_columns(t.num_dim, vector<int>(t.size()))
+    , sorted_columns_original_tids(t.num_dim, vector<int>(t.size()))
+    {
+        generate_index();
+    }
+
+private:
+    void generate_index(){
+        auto start = chrono::system_clock::now();
+        cout << "Generate Col Table sorted BATs " << endl;
+        const int num_tuples = size();
+
+        for(int column = 0; column < num_dim; column++) {//hard
+            cout << "col=" << column << " ";
+            const vector<int>& org_data = columns.at(column);
+
+            vector<value_tid> to_sort;
+            for(int tid=0;tid<num_tuples;tid++) {
+                to_sort.push_back({org_data.at(tid), tid});
+            }
+            std::sort(to_sort.begin(),to_sort.end());
+
+            vector<int> sorted_column = sorted_columns.at(column);
+            vector<int> original_tid  = sorted_columns_original_tids.at(column);
+            for(int i=0;i<to_sort.size();i++) {
+                value_tid v_t = to_sort.at(i);
+                int tid = v_t.tid;
+                int value = v_t.value;
+                sorted_column.at(i) = value;
+                original_tid.at(i)  = tid;
+            }
+        }
+        auto stop = chrono::system_clock::now();
+        cout << " Done in "<<chrono::duration_cast<chrono::milliseconds>(stop - start).count() << endl;
+    }
 };
 
 

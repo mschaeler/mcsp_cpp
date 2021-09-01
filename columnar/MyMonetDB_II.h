@@ -7,11 +7,15 @@
 
 #include <algorithm>
 #include "Selecticity.h"
+#include <math.h>       /* log2 */
 
 class MyMonetDB_II : public MyMonetDB {
 public:
     Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
         int size = column_indexes.size();
+        if(size == 1){//nothing to sort
+            return MyMonetDB::select(t,column_indexes,predicates,selectivities);
+        }
         vector<Selecticity> to_sort;
         for(int i=0;i<size;i++){
             Selecticity temp(column_indexes.at(i), predicates.at(i).at(LOWER), predicates.at(i).at(UPPER), selectivities.at(i));
@@ -33,17 +37,60 @@ public:
         }
 
         return  MyMonetDB::select(t, _column_indexes, _predicates, _selectivities);
-        /*
-        ColTable& table = dynamic_cast<ColTable &>(t);
-        if(column_indexes.size()==1){
-            return mono_column_select(table, column_indexes[0], predicates[0][LOWER], predicates[0][UPPER]);
-        } else {
-            return multi_column_select(table, column_indexes, predicates);
-        }
-        */
     }
     string name(){
         return "MyMonetDB II";
+    }
+};
+
+class MyMonetDB_Indexed : public MyMonetDB{
+    Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
+        ColTable_Indexed& table = dynamic_cast<ColTable_Indexed &>(t);
+        //first predicate produces the first synopsis
+        Synopsis& s = mono_column_select(table, column_indexes[0], predicates[0][LOWER], predicates[0][UPPER]);
+
+        if(column_indexes.size()==1){
+            return s;
+        }
+
+        ColTable& table_c = dynamic_cast<ColTable &>(t);
+        for(int p=1;p<column_indexes.size();p++){//start at the second predicate
+            s = MyMonetDB::select(table_c, column_indexes.at(p), predicates.at(p).at(LOWER), predicates.at(p).at(UPPER), s);
+        }
+
+        return s;
+    }
+
+    Synopsis& mono_column_select(ColTable_Indexed& t, const int col_index, const int lower, const int upper){
+        //cout << "daaaaaaaaaaaaaaaa" << endl;
+        intermediate_result.clear();
+        const vector<int>& sorted_column = t.sorted_columns.at(col_index);
+
+        auto low = lower_bound (sorted_column.begin(), sorted_column.end(), lower);
+        auto up  = upper_bound (sorted_column.begin(), sorted_column.end(), upper);
+        std::cout << "lower_bound at position " << (low- sorted_column.begin()) << endl;
+        std::cout << "upper_bound at position " << (up - sorted_column.begin()) << endl;
+        intermediate_result.copy(low, up);
+        //copy(low,up,intermediate_result.array.begin());
+
+        if(LOG_COST){
+            read_cost  += 2*log2(t.size());
+            write_cost += intermediate_result.size();
+        }
+        return intermediate_result;
+    }
+
+    Table* get_TPC_H_lineitem(double scale){
+        Table* t;
+
+        ColTable table = ColTable(scale);//create locally
+        ColTable_Indexed* t_1 = new ColTable_Indexed(table);//create globally
+        t =  dynamic_cast<Table*>(t_1);
+        return t;
+    }
+
+    string name(){
+        return "MyMonetDB Indexed";
     }
 };
 

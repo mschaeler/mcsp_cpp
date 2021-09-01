@@ -11,7 +11,7 @@
 
 //#include "../general/Util.h"
 
-typedef int64_t elf_pointer;
+typedef int32_t elf_pointer;
 
 class Elf : public Table{
 public:
