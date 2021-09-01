@@ -17,7 +17,7 @@ public:
     {}
 
     int start_dim;
-    int elf_sub_tree;
+    elf_pointer elf_sub_tree;
     int tid;
 };
 
@@ -54,7 +54,7 @@ class Elf_builder_separate {
 
     void get_max_column_value(vector<int32_t>& vector) {
         for(int col=0;col<num_dim;col++){
-            vector[col] = max(this->table.columns[col]);
+            vector.at(col) = max(this->table.columns.at(col));
         }
     }
 
@@ -113,14 +113,14 @@ class Elf_builder_separate {
         for(;dim<num_dim;dim++){
             //set the begin pointer of all subsequent levels (including me)
             //to the same value to indicate that they do not exist.
-            this->levels[dim] = write_pointer;
+            this->levels.at(dim) = write_pointer;
         }
 
         //usually the first mono lists is not in the first level. Find out where it starts
         int current_level = this->mono_lists.at(0).start_dim;
         //For all levels above, there is no Mono List -> set is begin pointer to 0
         for(int l=0;l<current_level;l++){
-            this->levels_mono_lists[l] = 0;
+            this->levels_mono_lists.at(l) = 0;
         }
         //sanity check - all points arrived at a mono list?
         if(this->mono_lists.size()!=table.size()){
@@ -136,7 +136,7 @@ class Elf_builder_separate {
                 if(mono.start_dim<current_level){
                     cout << "Boah, they should be sorted"<<endl;
                 }else{
-                    this->levels_mono_lists[current_level] = mono_list_array.size();
+                    this->levels_mono_lists.at(current_level) = mono_list_array.size();
                     current_level = mono.start_dim;//may be multiple levels deeper
                 }
             }
@@ -151,12 +151,12 @@ class Elf_builder_separate {
         //mono_list_array.resize(mono_list_array.size());
 
         for(;current_level<num_dim;current_level++){
-            this->levels_mono_lists[current_level] = mono_list_array.size();
+            this->levels_mono_lists.at(current_level) = mono_list_array.size();
         }
 
         cout << "Almost done level statistics levels=" << Util::to_string(levels) << " mono list levels=" << Util::to_string(levels_mono_lists) <<  endl;
 
-        cout << levels[0] << endl;
+        cout << levels.at(0) << endl;
         //cout << Util::to_string(levels_mono_lists) << endl;
         auto end = chrono::system_clock::now();
 
@@ -284,8 +284,8 @@ class Elf_builder_separate {
 
     void writeMonoList(BecomesMonoList& mono) {
         //write missing pointer to mono list
-        int write_to_location = mono_list_array.size() | Elf::LAST_ENTRY_MASK;
-        pointer[mono.elf_sub_tree] =  write_to_location;
+        elf_pointer write_to_location = mono_list_array.size() | Elf::LAST_ENTRY_MASK;
+        pointer.at(mono.elf_sub_tree) =  write_to_location;
 
         //write mono list
         for(int dim=mono.start_dim;dim<num_dim;dim++){
@@ -309,15 +309,15 @@ class Elf_builder_separate {
 	 * @param level - level[value] allows to access all points with that value
 	 */
     vector<vector<int32_t>> buildFirstLevel(){
-        const vector<int>& column = this->table.columns[0];//First column
+        const vector<int>& column = this->table.columns.at(0);//First column
         int size = column.size();
-        vector<vector<int32_t>> level(this->max_values[0]+1);//one entry for each value including the largest one (i.e., +1)
+        vector<vector<int32_t>> level(this->max_values.at(0)+1);//one entry for each value including the largest one (i.e., +1)
 
         /**
          * (1) distribute all the points according to their value in first column
          */
         for(int tid=0;tid<size;tid++){					    // for each point in table
-            int value = column[tid];			            // value of point with TID=tid
+            int value = column.at(tid);			            // value of point with TID=tid
             vector<int32_t>& my_sub_tree = level.at(value);	// you need to go here
             if(tid>size){
                 cout << "tid to large: " << tid << " of " << size << endl;
@@ -331,19 +331,19 @@ class Elf_builder_separate {
     vector<SubTree> buildSecondLevel(vector<vector<int32_t>>& last_level) {
         int my_dim = 0 + 1;
         const vector<int>& raw_column = table.columns.at(my_dim);
-        size_t dim_max = this->max_values[my_dim] + 1;//including largest value
+        size_t dim_max = this->max_values.at(my_dim) + 1;//including largest value
         vector<SubTree> level;
-        write_pointer = this->max_values[0] + 1;    // Assume that we really need all the values
-        levels[0] = write_pointer;            // This is the position where the first node in the 2nd level starts, i.e., we store the start offset of the 2nd level
+        write_pointer = this->max_values.at(0) + 1;    // Assume that we really need all the values
+        levels.at(0) = write_pointer;            // This is the position where the first node in the 2nd level starts, i.e., we store the start offset of the 2nd level
 
         // For each node in this level
         for (int32_t node = 0; node < last_level.size(); node++) {
-            if (!last_level[node].empty()) {
+            if (!last_level.at(node).empty()) {
                 /*******************************************
                  * (1) handle root of sub tree in last level
                  *******************************************/
-                values[node] = node;
-                pointer[node] = write_pointer;//XXX - this is the problem, we can set the pointers one level later only, i.e., these are pointers in the root level.
+                values.at(node) = node;
+                pointer.at(node) = write_pointer;//XXX - this is the problem, we can set the pointers one level later only, i.e., these are pointers in the root level.
 
                 /*******************************************
                  * (2.1) Now create the new dim list (i.e., node) in this level
@@ -362,10 +362,10 @@ class Elf_builder_separate {
                 vector<vector<int32_t>> my_dim_elements = distribute(raw_column, last_level[node], dim_max, my_dim);
                 // my_dim_elements[value] -> gives all tids having this value in this level
                 for (int i = 0; i < my_dim_elements.size(); i++) {//so many may exist, there may be empty elements, we do not materialize
-                    vector<int32_t> &contained_points = my_dim_elements[i];
+                    vector<int32_t> &contained_points = my_dim_elements.at(i);
                     if (!contained_points.empty()) {
                         int32_t val = i;//XXX trick
-                        values[write_pointer] = val;
+                        values.at(write_pointer) = val;
                         SubTree sub(write_pointer, contained_points);
 
                         if (contained_points.size() > 1) {
@@ -379,11 +379,11 @@ class Elf_builder_separate {
                     }//else ignore this one
                 }
                 //now we know the real length
-                values[length_pointer] = length | Elf::LAST_ENTRY_MASK;
-                last_level[node].clear();
+                values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;
+                last_level.at(node).clear();
             } else {
-                values[node] = Elf::EMPTY_ROOT_NODE;
-                pointer[node] = Elf::EMPTY_ROOT_NODE;
+                values.at(node) = Elf::EMPTY_ROOT_NODE;
+                pointer.at(node) = Elf::EMPTY_ROOT_NODE;
             }
         }
         cout << "dim=" << my_dim << " non unique sub trees " << level.size() << endl;
@@ -391,15 +391,15 @@ class Elf_builder_separate {
     }
 
     vector<SubTree> buildLevel(const vector<SubTree>& last_level, int my_dim) {
-        vector<int> column = table.columns[my_dim];
-        int dim_max = this->max_values[my_dim] + 1;//including largest value
+        vector<int> column = table.columns.at(my_dim);
+        int dim_max = this->max_values.at(my_dim) + 1;//including largest value
         vector<SubTree> level;
-        this->levels[my_dim-1] = write_pointer;//The one before ends here
+        this->levels.at(my_dim-1) = write_pointer;//The one before ends here
 
         //for each node s (sub tree) in this level
         for(auto me : last_level){
             //Now we know the start position. Tell this to the root node of this sub tree
-            pointer[me.start_pointer] = write_pointer;
+            pointer.at(me.start_pointer) = write_pointer;
             vector<vector<int>> my_dim_elements = distribute(column, me.contained_points, dim_max, my_dim);
 
             // store length of dim list
@@ -408,10 +408,10 @@ class Elf_builder_separate {
             write_pointer++;
 
             for(int i=0;i<my_dim_elements.size();i++){//so many sub trees may exist, there may be null elements, we do not materialize
-                vector<int>& contained_points = my_dim_elements[i];
+                vector<int>& contained_points = my_dim_elements.at(i);
                 if(!contained_points.empty()){
                     int val = i;//XXX trick
-                    values[write_pointer] = val;
+                    values.at(write_pointer) = val;
                     SubTree sub(write_pointer, contained_points);
 
                     if(contained_points.size()>1){
@@ -425,7 +425,7 @@ class Elf_builder_separate {
                 }//else ignore this one
             }
             //now we the real length
-            values[length_pointer] = length | Elf::LAST_ENTRY_MASK;
+            values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;
         }
         cout << "dim=" << my_dim << " non unique sub trees " << level.size() << endl;
         return level;
