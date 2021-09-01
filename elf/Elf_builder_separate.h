@@ -43,11 +43,11 @@ class Elf_builder_separate {
     int32_t write_pointer = 0;
 
     vector<int32_t> values;
-    vector<int32_t> pointer;
+    vector<elf_pointer> pointer;
     vector<int32_t> mono_list_array;
 
-    vector<int32_t> levels;
-    vector<int32_t> levels_mono_lists;
+    vector<elf_pointer> levels;
+    vector<elf_pointer> levels_mono_lists;
     vector<int32_t> max_values;
 
     vector<BecomesMonoList> mono_lists;

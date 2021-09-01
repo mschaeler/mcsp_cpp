@@ -18,7 +18,7 @@ class Util {
 public:
     const static long seed = 12345678;
     /** s=1 */
-    const static int NUM_TUPLES_S_ONE = 6000000;
+    const static int NUM_TUPLES_S_ONE = 6000000;//6,000,000
     const static int SF_LINEITEM = NUM_TUPLES_S_ONE;
     const static int SF_ORDERS 		= 1500000;//1,500,000
     const static int SF_CUSTOMER	=  150000;//150,000
@@ -203,7 +203,7 @@ public:
             all_data.at(l_receiptdate).at(tid) = all_data.at(l_shipdate).at(tid) + 1 + (rand() % 30);//in %
         }
         auto end = chrono::system_clock::now();
-        cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
+        cout << " Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " |D|=" << all_data.at(0).size() << endl;
     }
 
     static void getDataTPCHTuple_lin_columnar(vector<int>& all_data, size_t tid, vector<size_t> column_offsets, double s){
@@ -258,7 +258,24 @@ public:
         all_data[column_offsets[l_receiptdate]+tid] = all_data[column_offsets[l_shipdate]+tid]+1+(rand()%30);//in %
 
     }
-
+    static string to_string(vector<int64_t> vec){
+        string str;
+        str.append("(");
+        for(int s : vec){
+            str.append(std::__cxx11::to_string(s)+", ");
+        }
+        str.replace(str.length()-2,1,")");
+        return str;
+    }
+    static string to_string(vector<vector<int64_t>> vec){
+        string str;
+        str.append("(");
+        for(vector<int64_t>& v : vec){
+            str.append(to_string(v)+", ");
+        }
+        str.replace(str.length()-2,1,")");
+        return str;
+    }
     static string to_string(vector<int> vec){
         string str;
         str.append("(");
@@ -467,6 +484,20 @@ public:
         out.close();
         return true;
     }
+    static bool write_file(const string& path, vector<uint64_t>& to_write){
+        std::ofstream out(path, std::ios_base::binary);
+        //out.write(reinterpret_cast<char*>(&size), sizeof(size));
+        out.write(reinterpret_cast<char*>(to_write.data()), to_write.size()*sizeof(uint64_t));
+        /*std::ofstream outFile(path, ios::out | ios::binary);
+
+        // the important part
+        char* p = &to_write[0];
+        outFile.write(p, to_write.size() * sizeof(to_write));
+        //for (const auto &e : to_write) outFile << e << "\n";
+         */
+        out.close();
+        return true;
+    }
     /**
      *
      * @param path
@@ -500,6 +531,22 @@ public:
         // read the data:
         cout << "file size=" << fileSize << endl;
         std::vector<int> fileData(fileSize/sizeof(int));
+        file.read((char*) &fileData[0], fileSize);
+        return fileData;
+    }
+    static vector<uint64_t> read_file_uint64_t(const string& path){
+        // open the file:
+        std::streampos fileSize;
+        std::ifstream file(path, std::ios::binary);
+
+        // get its size:
+        file.seekg(0, std::ios::end);
+        fileSize = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        // read the data:
+        cout << "file size=" << fileSize << endl;
+        std::vector<uint64_t> fileData(fileSize/sizeof(uint64_t));
         file.read((char*) &fileData[0], fileSize);
         return fileData;
     }

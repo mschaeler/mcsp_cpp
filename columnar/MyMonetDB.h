@@ -83,8 +83,7 @@ public:
         Table* t;
 
         ColTable* table = new ColTable(scale);
-        //std::cout << table->out() << std::endl;
-        t =  dynamic_cast<Table *>(table);
+        t =  dynamic_cast<Table*>(table);
         return t;
     }
 

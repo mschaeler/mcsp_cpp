@@ -391,8 +391,8 @@ public:
             , vector<int32_t>& _values
             , vector<elf_pointer>& _pointer
             , vector<int32_t>& _mono_lists
-            , vector<int32_t>& _levels
-            , vector<int32_t>& _levels_mono_lists
+            , vector<elf_pointer>& _levels
+            , vector<elf_pointer>& _levels_mono_lists
             , int32_t _num_dim
             ) :
             Elf(name, col_names)
@@ -586,11 +586,12 @@ public:
     }
 
     static Elf_table_lvl_seperate* from_file(double scale){
+        cout << "Elf.from_file() does not work properly - and parts are out commented" << endl;
         if(exists(scale)) {
             string file_name = "..//data/" + to_string(scale) + "_elf_separate";
             cout << "from_file("+to_string(scale)+") reading from " << file_name <<  endl;
-            vector<int> _levels;
-            vector<int> _levels_mono_lists;
+            vector<elf_pointer> _levels;
+            vector<elf_pointer> _levels_mono_lists;
             {
                 vector<int> meta_info = Util::read_file(file_name + ".meta.elf");
                 int num_dim_read = meta_info.at(0);
@@ -607,7 +608,7 @@ public:
                 }
             }
             vector<int> _values      = Util::read_file(file_name + ".values.elf");
-            vector<int> _pointer     = Util::read_file(file_name + ".pointer.elf");
+            vector<elf_pointer> _pointer;//     = Util::read_file(file_name + ".pointer.elf"); TODO
             vector<int> _mono_lists  = Util::read_file(file_name + ".mono_lists.elf");
 
             string name = "lineitem";
@@ -678,15 +679,12 @@ public:
         temp = elf.values;
         Util::write_file(file_name+".values.elf",temp);
 
-        temp = elf.pointer;
+        vector<elf_pointer> temp_e = elf.pointer;
         Util::write_file(file_name+".pointer.elf",temp);
 
         temp = elf.mono_lists;
         Util::write_file(file_name+".mono_lists.elf",temp);
 
-        /*
-        Util::write_file(file_name,elf.values);
-        Util::write_file(file_name,elf.values);*/
         return true;
     }
 };

@@ -29,8 +29,8 @@ public:
             , vector<int32_t>& _values
             , vector<elf_pointer>& _pointer
             , vector<int32_t>& _mono_lists
-            , vector<int32_t>& _levels
-            , vector<int32_t>& _levels_mono_lists
+            , vector<elf_pointer>& _levels
+            , vector<elf_pointer>& _levels_mono_lists
             , int32_t _num_dim
             //Elf_Table_Lvl_Cutoffs specific
             , vector<int32_t>& _tids_in_elf_order

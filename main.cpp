@@ -59,15 +59,16 @@ int main() {
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
-    cout << "Config::LOG_COST=" << Config::LOG_COST << endl;
-    double scale = 20;
+    cout << "Config::LOG_COST=" << Config::LOG_COST << "Elf pointer size= " <<sizeof(elf_pointer) << endl;
+    double scale = 1;
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges(), new MyHyper()};
+    //vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl()};
     SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
 
     //run_p_benchmark(scale);
