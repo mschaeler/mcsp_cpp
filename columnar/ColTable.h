@@ -197,22 +197,26 @@ public:
 private:
     void generate_index(){
         auto start = chrono::system_clock::now();
-        cout << "Generate Col Table sorted BATs " << endl;
+        cout << "Generate Col Table sorted BATs ";
         const int num_tuples = size();
+        vector<value_tid> to_sort(num_tuples);
 
         for(int column = 0; column < num_dim; column++) {//hard
             cout << "col=" << column << " ";
+            cout.flush();
             const vector<int>& org_data = columns.at(column);
 
-            vector<value_tid> to_sort;
+            //vector<value_tid> to_sort;
             for(int tid=0;tid<num_tuples;tid++) {
-                to_sort.push_back({org_data.at(tid), tid});
+                to_sort.at(tid).tid   = tid;
+                to_sort.at(tid).value = org_data.at(tid);
             }
+
             std::sort(to_sort.begin(),to_sort.end());
 
-            vector<int> sorted_column = sorted_columns.at(column);
-            vector<int> original_tid  = sorted_columns_original_tids.at(column);
-            for(int i=0;i<to_sort.size();i++) {
+            vector<int>& sorted_column = sorted_columns.at(column);
+            vector<int>& original_tid  = sorted_columns_original_tids.at(column);
+            for(int i=0;i<num_tuples;i++) {
                 value_tid v_t = to_sort.at(i);
                 int tid = v_t.tid;
                 int value = v_t.value;

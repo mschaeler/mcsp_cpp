@@ -44,6 +44,8 @@ public:
 };
 
 class MyMonetDB_Indexed : public MyMonetDB{
+    static const bool USE_BUILD_IN_COPY = true;
+
     Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
         ColTable_Indexed& table = dynamic_cast<ColTable_Indexed &>(t);
         //first predicate produces the first synopsis
@@ -62,15 +64,26 @@ class MyMonetDB_Indexed : public MyMonetDB{
     }
 
     Synopsis& mono_column_select(ColTable_Indexed& t, const int col_index, const int lower, const int upper){
-        //cout << "daaaaaaaaaaaaaaaa" << endl;
         intermediate_result.clear();
         const vector<int>& sorted_column = t.sorted_columns.at(col_index);
+        const vector<int>& tids = t.sorted_columns_original_tids.at(col_index);//we need to use the original tids for the result found in here
 
-        auto low = lower_bound (sorted_column.begin(), sorted_column.end(), lower);
-        auto up  = upper_bound (sorted_column.begin(), sorted_column.end(), upper);
-        std::cout << "lower_bound at position " << (low- sorted_column.begin()) << endl;
-        std::cout << "upper_bound at position " << (up - sorted_column.begin()) << endl;
-        intermediate_result.copy(low, up);
+        const auto low = lower_bound (sorted_column.begin(), sorted_column.end(), lower);
+        const auto up  = upper_bound (sorted_column.begin(), sorted_column.end(), upper);
+        //std::cout << "lower_bound at position " << (low- sorted_column.begin()) << endl;
+        //std::cout << "upper_bound at position " << (up - sorted_column.begin()) << endl;
+
+        //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
+        const auto from = low - sorted_column.begin();
+        const auto to = up - sorted_column.begin();
+        if(USE_BUILD_IN_COPY){
+            intermediate_result.copy(tids.begin()+from, tids.begin()+to);
+        }else{
+            for(int pos=0;pos<from;pos++){
+                intermediate_result.add(tids.at(pos));
+            }
+        }
+
         //copy(low,up,intermediate_result.array.begin());
 
         if(LOG_COST){

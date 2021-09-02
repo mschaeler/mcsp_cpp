@@ -9,7 +9,7 @@
 #include <algorithm> //copy(it,it,vec)
 
 class Synopsis {
-    int write_pointer = 0;
+    int32_t write_pointer = 0;
 public:
     vector<int> array;
     Synopsis(int size) : array(size){
@@ -39,13 +39,16 @@ public:
         write_pointer = 0;
     }
 
-    void copy(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
-        std::vector<int>::size_type size = end-begin;
+    void ensure_capacity(const std::vector<int>::size_type size){
         if(array.capacity() < size){
             array.reserve(size);
         }
+    }
+
+    void copy(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
+        write_pointer = end-begin;
+        ensure_capacity(write_pointer);
         std::copy(begin, end, array.begin());
-        write_pointer = size;
     }
 };
 
