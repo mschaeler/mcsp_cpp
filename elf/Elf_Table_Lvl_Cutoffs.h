@@ -378,6 +378,17 @@ private:
         /** Index of the first tid in the next sub tree. So, we need to iterate until this one.*/
         const elf_pointer to 	= cutoff_start(next_elem_pointer);
 
+        /*int i=from;
+        while(i<to){
+            if(tids_level.at(i)<=level){
+                i++;//set to next elem which is first not to include
+                break;//unitl here
+            }
+            i++;
+        }
+        result_tids.add(tids_in_elf_order.begin()+from,tids_in_elf_order.begin()+i);
+        if(LOG_COST) {write_cost+=i-from;}
+*/
         for (int i = from; i < to; i++) {
             if(tids_level.at(i)>level) {
                 result_tids.add(tids_in_elf_order.at(i));
