@@ -64,11 +64,11 @@ int main() {
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
-    //vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
-    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges()};
+    vector<DatabaseSystem*> all_dbms = {new MyMonetDB()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges(),new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
-    vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
+    //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
 
     //run_p_benchmark(scale);

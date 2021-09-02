@@ -50,6 +50,14 @@ public:
         ensure_capacity(write_pointer);
         std::copy(begin, end, array.begin());
     }
+    void copy_unsafe(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
+        write_pointer = end-begin;
+        std::copy(begin, end, array.begin());
+    }
+    void add(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
+        std::copy(begin, end, array.begin()+write_pointer);
+        write_pointer += end-begin;
+    }
 };
 
 

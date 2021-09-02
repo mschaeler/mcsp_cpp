@@ -7,14 +7,14 @@
 
 class Elf_Table_Lvl_Cutoffs : public Elf_table_lvl_seperate {
 
-private:
+public:
     /** This are all tids in elf order */
     const vector<int> tids_in_elf_order;
     /** Indicates the level where mono list containing the corresponding point starts*/
     const vector<int> tids_level;//TODO byte[]?
     const int first_level_with_monolists;
 
-public:
+
 /*    Elf_Table_Lvl_Cutoffs(Elf_table_lvl_seperate& elf)
     : Elf_table_lvl_seperate(elf.my_name, elf.column_names, elf.values, elf.pointer , elf.mono_lists, elf.levels, elf.levels_mono_lists, elf.num_dim)
     {
@@ -121,11 +121,12 @@ public:
             }
             to = cutoff_start(elem_pointer);
         }
-
-        for(int i=from;i<to;i++) {
+        tids.copy_unsafe(tids_in_elf_order.begin()+from,tids_in_elf_order.begin()+to);
+        if(LOG_COST) {write_cost+=to-from;}
+        /*for(int i=from;i<to;i++) {
             tids.add(tids_in_elf_order.at(i));
             if(LOG_COST) {write_cost++;}
-        }
+        }*/
     }
 
     /********************************* Start mono columns selection Elf with Cutoffs **********************************/
@@ -264,10 +265,12 @@ private:
         /** Index of the first tid in the next sub tree. So, we need to iterate until this one.*/
         const elf_pointer to 	= cutoff_start(next_elem_pointer);
 
-        for (elf_pointer i = from; i < to; i++) {
+        result_tids.add(tids_in_elf_order.begin()+from,tids_in_elf_order.begin()+to);
+        if(LOG_COST) {write_cost+=to-from;}
+        /*for (elf_pointer i = from; i < to; i++) {
             result_tids.add(tids_in_elf_order.at(i));
             if(LOG_COST){write_cost++; read_cost++;}//XXX here the read cost may be a problem, but i think it is fair this way. similar as for indexed MonetDB
-        }
+        }*/
     }
 
     void get_tids_elem_next_elem_is_monolist(
@@ -333,10 +336,12 @@ private:
         const int from 	= cutoff_start(node_offset);
         const int to 	= tids_in_elf_order.size();
         if(level<first_level_with_monolists){
-            for (int i = from; i < to; i++) {
+            result_tids.add(tids_in_elf_order.begin()+from,tids_in_elf_order.begin()+to);
+            if(LOG_COST) {write_cost+=to-from;}
+            /*for (int i = from; i < to; i++) {
                 result_tids.add(tids_in_elf_order.at(i));
                 if(LOG_COST){read_cost+=1;}//XXX +1 we read tids_level  array and write the tid (so we do not really look at the tid)
-            }
+            }*/
         }else{
             for (int i = from; i < to; i++) {
                 if(tids_level.at(i)>level) {//we look for all tids deeper than this level

@@ -12,6 +12,7 @@ public:
     Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
         Elf_Table_Lvl_Cutoffs& elf = dynamic_cast<Elf_Table_Lvl_Cutoffs &>(t);//the table
         result_buffer.clear();
+        result_buffer.ensure_capacity(elf.tids_in_elf_order.size());
         if(column_indexes.size()==1){
             select_1(elf, column_indexes.at(0), predicates.at(0).at(LOWER), predicates.at(0).at(UPPER));
         }else{
