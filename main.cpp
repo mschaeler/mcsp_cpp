@@ -13,6 +13,7 @@
 #include "elf/Elf_Dbms_Lvl.h"
 #include "elf/Elf_Dbms_Lvl_Cutoffs.h"
 #include "elf/Elf_Dbms_Lvl_Ranges.h"
+#include "elf_cutoff_external/Elf_Table_Cutoff_External.h"
 
 void run_p_benchmark(double scale){
     DatabaseSystem* dbms;
@@ -38,20 +39,24 @@ int64_t write_cost = 0;
 
 void test_something(double scale){
     cout << "test_something(double scale)" << scale << endl;
-    ColTable t_loaded(scale);
 
-    auto* elf = Elf_builder_separate::build_with_cuttoffs(t_loaded);
 
-    string name = "lineitem";
+    ColTable t(scale);
+
+    Elf_Table_Cutoff_External* table = Elf_builder_separate::build_with_external_cuttoffs(t);
+
+
+    /*string name = "lineitem";
     vector<string> col_names = Util::get_tpch_linetime_column_names();
     vector<vector<int>> data(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*scale)));
     Util::getDataTPCHTuple_columnar(data, scale);
     ColTable t_constructed(name, col_names, data);
 
-    ColTable::equals(t_loaded, t_constructed);
+    ColTable::equals(t, t_constructed);
     //load col table from file
     //create col table
     //compare it
+     */
 }
 
 int main() {
@@ -60,16 +65,16 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
-    double scale = 20;
+    double scale = 1;
     cout << "scale="<<scale<<endl;
-    //test_something(0.1);
+    test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges(),new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
-    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
+    //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
 
     //run_p_benchmark(scale);
 

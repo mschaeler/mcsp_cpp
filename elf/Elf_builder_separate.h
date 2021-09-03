@@ -9,6 +9,7 @@
 #include "Elf.h"
 #include "Elf_table_lvl_seperate.h"
 #include "Elf_Table_Lvl_Cutoffs.h"
+#include "../elf_cutoff_external/Elf_Table_Cutoff_External.h"
 
 class BecomesMonoList{
 public:
@@ -39,6 +40,8 @@ class Elf_builder_separate {
     int32_t current_tid_offset = 0;
     vector<int32_t> tids_in_elf_order;
     vector<int32_t> tids_level;
+    /** for writing external cutoffs**/
+    vector<int32_t> cutoffs;
 
     int32_t write_pointer = 0;
 
@@ -193,6 +196,67 @@ class Elf_builder_separate {
     }
 
     //find tids in preorder traversal
+    void determine_and_write_external_cutoffs() {
+        const elf_pointer start = 0;//by definition
+        const elf_pointer stop = levels.at(Elf::FIRST_DIM);
+        current_tid_offset = 0;
+
+        for(elf_pointer elem=start;elem<stop;elem++) {//for each entry in the root
+            write_cuttoff_external(elem);
+            elf_pointer elem_pointer = pointer.at(elem);
+
+            if(elem_pointer!=Elf::EMPTY_ROOT_NODE){//non-dense data in first dimension
+                if(!points_to_monolist(elem_pointer)) {
+                    determine_and_write_external_cutoffs(elem_pointer, Elf::FIRST_DIM+1);
+                }
+            }
+        }
+    }
+
+    void write_cuttoff_external(elf_pointer elem_offset) {
+        if(Elf::SAVE_MODE) {
+            int temp_cuttoff = cutoffs.at(elem_offset);
+            if(temp_cuttoff!=Elf::NOT_FOUND && temp_cuttoff!=current_tid_offset) {//may be loaded cutt ofss from file
+                cout << "write_cuttoff(" << elem_offset << ","+current_tid_offset << ") write to non empty position and existing cutoff incorrect" << endl;
+            }
+        }
+        cutoffs.at(elem_offset) = current_tid_offset;
+    }
+
+    /**
+     * Processes one node and recursively propagates to next level in pre order traversal.
+     * We use pre-order traversal, since we then find tids according to Elf sort order.
+     *
+     * @param start_list
+     * @return - the total number of tids, we have already seen.
+     */
+    void determine_and_write_external_cutoffs(const elf_pointer start_list, const int level){
+        const int length = get_node_size(start_list);
+
+        /*if(Elf::SAVE_MODE) {
+            if(level!=get_level(start_list)) {
+                System.err.println("determine_and_write_cutoffs(int,int) level!=getLevel()");
+            }
+        }*/
+
+        for(int elem=0;elem<length;elem++) {
+            const elf_pointer elem_offset = start_list + Elf_table_lvl_seperate::NODE_HEAD_LENGTH + elem;//+1 for length
+            write_cuttoff_external(elem_offset);
+            int start_list_next_dim = pointer.at(elem_offset);
+            if (points_to_monolist(start_list_next_dim)) {
+                //no cutoff to write
+                start_list_next_dim &= Elf::RECOVER_MASK;
+                int tid = get_tid_from_monolist(start_list_next_dim, level + 1);
+                tids_in_elf_order.at(current_tid_offset) = tid;
+                tids_level.at(current_tid_offset) = level + 1;//mono list starts in the next level
+                current_tid_offset++;
+            } else {
+                determine_and_write_external_cutoffs(start_list_next_dim, level + 1);
+            }
+        }
+    }
+
+            //find tids in preorder traversal
     void determine_and_write_cutoffs() {
         cout << "determine_and_write_cutoffs()" << endl;
         int start = 0;//by definition
@@ -278,6 +342,32 @@ class Elf_builder_separate {
         if(Elf::SAVE_MODE){
             test_exact(this->table,to_return);
             to_return->check_cutoffs(this->table);
+        }
+        return to_return;
+    }
+
+    Elf_Table_Cutoff_External* create_elf_instance_with_external_cuttoffs(){
+        tids_in_elf_order.resize(table.size(), -1);
+        tids_level.resize(table.size(),-1);
+        cutoffs.resize(pointer.size(),-1);//this vector simply has the size of the pointer array as there is a cutoff for every pointer
+        determine_and_write_external_cutoffs();
+
+        Elf_Table_Cutoff_External* to_return = new Elf_Table_Cutoff_External(
+                this->table.my_name
+                , this->table.column_names
+                , this->values
+                , this->pointer
+                , this->mono_list_array
+                , this->levels
+                , this->levels_mono_lists
+                , this->num_dim
+                , this->tids_in_elf_order
+                , this->tids_level
+                , this->cutoffs
+        );
+        if(Elf::SAVE_MODE){
+            test_exact(this->table,to_return);
+            to_return->check_cutoffs();
         }
         return to_return;
     }
@@ -483,6 +573,7 @@ public:
         , mono_list_array()
         , tids_in_elf_order(0)
         , tids_level(0)
+        , cutoffs(0)
     {
 
 
@@ -507,6 +598,13 @@ public:
         cout << "build()" << endl;
         separate.build();
         Elf_Table_Lvl_Cutoffs* elf = separate.create_elf_instance_with_cuttoffs();
+        return elf;
+    }
+    static Elf_Table_Cutoff_External* build_with_external_cuttoffs(ColTable& table){
+        Elf_builder_separate separate (table);
+        cout << "build()" << endl;
+        separate.build();
+        Elf_Table_Cutoff_External* elf = separate.create_elf_instance_with_external_cuttoffs();
         return elf;
     }
 };
