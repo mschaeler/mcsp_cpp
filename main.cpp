@@ -15,6 +15,7 @@
 #include "elf/Elf_Dbms_Lvl_Ranges.h"
 #include "elf_cutoff_external/Elf_Table_Cutoff_External.h"
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Cutoffs_External.h"
+#include "elf_cutoff_external/Elf_Dbms_Lvl_Ranges_External.h"
 
 void run_p_benchmark(double scale){
     DatabaseSystem* dbms;
@@ -66,17 +67,17 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
-    double scale = 1;
+    double scale = 10;
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
-    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges(),new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed(),new MyRowiseHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new MyHyper()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};
 
     SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
     //run_p_benchmark(scale);

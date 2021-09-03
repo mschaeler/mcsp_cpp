@@ -16,6 +16,8 @@ public:
     const int first_level_with_monolists;
     const vector<int> cutoffs;
 
+    static const bool USE_MEMCOPY = false;
+
     Elf_Table_Cutoff_External(
             string& name
             , vector<string>& col_names
@@ -33,11 +35,9 @@ public:
             , tids_in_elf_order(_tids_in_elf_order)
             , tids_level(_tids_level)
             , cutoffs(_cutoffs)
-            , first_level_with_monolists(get_first_level_with_monolists(_mono_lists))
+            , first_level_with_monolists(get_first_level_with_monolists(_levels_mono_lists))
     {
-        cout << "values.size()=" << values.size() << "pointer.size()=" << pointer.size() << "mono_lists.size()=" << mono_lists.size() << endl;
-        cout << "levels="<< Util::to_string(levels) << "levels_mono_lists=" << Util::to_string(levels_mono_lists) << endl;
-        cout << "tids_in_elf_order.size()=" << tids_in_elf_order.size() << " tids_level.size()=" << tids_level.size() << " cutoffs.size()=" << cutoffs.size() << endl;
+        cout << " cutoffs.size()=" << cutoffs.size() << "first level with monolists= "<<first_level_with_monolists<< endl;
     }
 
     void check_cutoffs() {
@@ -78,6 +78,87 @@ public:
         int offset = start_level;
         while (offset<stop_level) {//for each node in this level
             offset = select_1_node(offset, level, lower, upper, tids);
+        }
+    }
+
+    void select_1_ranges(
+            const elf_pointer start_level, const elf_pointer stop_level, const int level
+            , Synopsis& tids, const int lower, const int upper
+    ) const {
+        if(SAVE_MODE){
+            bool no_monolists_above = level<first_level_with_monolists;//TODO case distinction
+            if(no_monolists_above){
+                cout << "no_monolists_above should call call select_1_ranges_no_monolists_above" << endl;
+            }
+        }
+        elf_pointer elem_offset = start_level;
+        int from = NOT_FOUND;
+
+        /*******************************
+         * for each node in this level *
+         *******************************/
+        while (elem_offset<stop_level) {
+            /***************************************************************
+             * (1) Find the start of a result run 						   *
+             ***************************************************************/
+            elem_offset = find_start_of_run(elem_offset, stop_level, lower, upper);
+            if(elem_offset != NOT_FOUND) {
+                from = cutoff(elem_offset);
+                elem_offset++;
+            }else{
+                return;//there is no (more) run
+            }
+
+            /***************************************************************
+             * (2) Find the end of a result run and materialize			   *
+             ***************************************************************/
+            elem_offset = find_stop_of_run(elem_offset, stop_level, lower, upper);
+            if(elem_offset == stop_level) {
+               copy(from, tids_in_elf_order.size(), level, tids);
+            }else{
+                const int to = cutoff(elem_offset);
+                copy(from, to, level, tids);
+            }
+        }
+    }
+    void select_1_ranges_no_monolists_above(
+            const elf_pointer start_level, const elf_pointer stop_level, const int level
+            , Synopsis& tids, const int lower, const int upper
+    ) const {
+        if(SAVE_MODE){
+            bool no_monolists_above = level<first_level_with_monolists;//TODO case distinction
+            if(!no_monolists_above){
+                cout << "there may be monolists above must call select_1_ranges()" << endl;
+            }
+        }
+        elf_pointer elem_offset = start_level;
+        int from = NOT_FOUND;
+
+        /*******************************
+         * for each node in this level *
+         *******************************/
+        while (elem_offset<stop_level) {
+            /***************************************************************
+             * (1) Find the start of a result run 						   *
+             ***************************************************************/
+            elem_offset = find_start_of_run(elem_offset, stop_level, lower, upper);
+            if(elem_offset != NOT_FOUND) {
+                from = cutoff(elem_offset);
+                elem_offset++;
+            }else{
+                return;//there is no (more) run
+            }
+
+            /***************************************************************
+             * (2) Find the end of a result run and materialize			   *
+             ***************************************************************/
+            elem_offset = find_stop_of_run(elem_offset, stop_level, lower, upper);
+            if(elem_offset == stop_level) {
+                copy(from, tids_in_elf_order.size(), tids);
+            }else{
+                const int to = cutoff(elem_offset);
+                copy(from, to, tids);
+            }
         }
     }
 
@@ -166,6 +247,49 @@ private:
         copy_abort(from, to, level, result_tids);
     }
 
+    /**
+     *
+     * @param elem_offset
+     * @param stop_level
+     * @param lower
+     * @param upper
+     * @return elem_offset where run starts or NOT_FOUND
+     */
+    int find_start_of_run(elf_pointer elem_offset, const elf_pointer stop_level, const int lower, const int upper) const {
+        while (elem_offset<stop_level) {
+            const int elem_val = get_value(elem_offset);
+            if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                if(Util::isIn(elem_val, lower, upper)) {
+                    // We found a result run
+                    return elem_offset;
+                }
+            }
+            elem_offset++;//next elem
+        }
+        return NOT_FOUND;
+    }
+
+    /**
+     *
+     * @param elem_offset
+     * @param stop_level
+     * @param lower
+     * @param upper
+     * @return elem_offset where run stops or stop_level
+     */
+    int find_stop_of_run(elf_pointer elem_offset, const elf_pointer stop_level, const int lower, const int upper) const {
+        while (elem_offset<stop_level) {
+            const int elem_val = get_value(elem_offset);
+            if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                if(!Util::isIn(elem_val, lower, upper)) {
+                    return elem_offset;
+                }
+            }
+            elem_offset++;//next elem
+        }
+        return stop_level;
+    }
+
     void check_cutoffs(const elf_pointer node_offset, const int level) {
         if(!is_node_length_offset(node_offset)) {
             cout << "!is_node_length_offset(node_offset)" << endl;
@@ -227,7 +351,7 @@ private:
         return level_stop(elem_level)==elem_offset+1;
     }
 
-    const inline int cutoff(const int elem_offset) const {
+    inline int cutoff(const int elem_offset) const {
         if(SAVE_MODE) {
             if(is_node_length_offset(elem_offset) && elem_offset >= level_stop(1)) {
                 cout << "cutoff(int) called for node, not for element" << endl;
@@ -235,6 +359,10 @@ private:
         }
         if(LOG_COST){read_cost++;}
         return cutoffs.at(elem_offset);
+    }
+
+    inline bool is_node_length(const int value) const {
+        return value<0;
     }
 
     /**
@@ -245,9 +373,32 @@ private:
      */
     inline void copy(const int from, const int to, Synopsis& result_tids) const {
         /** Index of the first tid in the next sub tree. So, we need to iterate until this one.*/
+        if(USE_MEMCOPY){
+            result_tids.add(tids_in_elf_order.begin()+from,tids_in_elf_order.begin()+to);
+            if(LOG_COST) {write_cost+=to-from;}
+        }else{
+            for (int i = from; i < to; i++) {
+                result_tids.add(tids_in_elf_order.at(i));
+                if(LOG_COST){write_cost++;}
+            }
+        }
+    }
+
+    /**
+     * Safe towards non-density bug
+     * @param from
+     * @param to
+     * @param level
+     * @param MyArrayList
+     */
+    inline void copy(const int from, const int to, const int level, Synopsis& result_tids) const {
+        /** Index of the first tid in the next sub tree. So, we need to iterate until this one.*/
         for (int i = from; i < to; i++) {
-            result_tids.add(tids_in_elf_order.at(i));
-            if(LOG_COST){write_cost++;}
+            if(tids_level.at(i)>level) {
+                result_tids.add(tids_in_elf_order.at(i));//@me cannot use memcopy here....
+                if(LOG_COST){write_cost++;}
+            }
+            if(LOG_COST){read_cost++;}
         }
     }
 

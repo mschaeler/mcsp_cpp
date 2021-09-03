@@ -38,7 +38,7 @@ public:
     ): Elf_table_lvl_seperate(name, col_names, _values, _pointer , _mono_lists, _levels, _levels_mono_lists, _num_dim)
     , tids_in_elf_order(_tids_in_elf_order)
     , tids_level(_tids_level)
-    , first_level_with_monolists(get_first_level_with_monolists(_mono_lists))
+    , first_level_with_monolists(get_first_level_with_monolists(_levels_mono_lists))
     {
         //Nothing to do
         cout << "values.size()=" << values.size() << "pointer.size()=" << pointer.size() << "mono_lists.size()=" << mono_lists.size() << endl;

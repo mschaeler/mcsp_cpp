@@ -2,12 +2,12 @@
 // Created by Martin on 03.09.2021.
 //
 
-#ifndef MY_MCSP_ELF_DBMS_LVL_CUTOFFS_EXTERNAL_H
-#define MY_MCSP_ELF_DBMS_LVL_CUTOFFS_EXTERNAL_H
+#ifndef MY_MCSP_ELF_DBMS_LVL_RANGES_EXTERNAL_H
+#define MY_MCSP_ELF_DBMS_LVL_RANGES_EXTERNAL_H
 
 #include "../elf/Elf_Dbms_Lvl.h"
 
-class Elf_Dbms_Lvl_Cutoffs_External : public Elf_Dbms_Lvl{
+class Elf_Dbms_Lvl_Ranges_External : public Elf_Dbms_Lvl {
     Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
         Elf_Table_Cutoff_External& elf = dynamic_cast<Elf_Table_Cutoff_External &>(t);//the table
         result_buffer.clear();
@@ -36,9 +36,9 @@ class Elf_Dbms_Lvl_Cutoffs_External : public Elf_Dbms_Lvl{
 
     string name(){
         if(Elf_Table_Cutoff_External::USE_MEMCOPY){
-            return "Elf_Dbms_Lvl_Cutoffs_External USE_MEMCOPY=true";
+            return "Elf_Dbms_Lvl_Ranges_External USE_MEMCOPY=true";
         }else{
-            return "Elf_Dbms_Lvl_Cutoffs_External";
+            return "Elf_Dbms_Lvl_Ranges_External";
         }
     }
 private:
@@ -76,10 +76,14 @@ private:
 
         elf_pointer stop_level = elf.level_stop(level);
         elf_pointer offset     = elf.level_start(level);
-
-        elf.select_1_cutoff(offset, stop_level, level, result_buffer, lower, upper);
+        bool no_monolists_above = level<elf.first_level_with_monolists;
+        if(no_monolists_above){
+            elf.select_1_ranges_no_monolists_above(offset, stop_level, level, result_buffer, lower, upper);//can us better copy() function
+        }else{
+            elf.select_1_ranges(offset, stop_level, level, result_buffer, lower, upper);//non-density bug requirees copy function using for loop
+        }
     }
 };
 
 
-#endif //MY_MCSP_ELF_DBMS_LVL_CUTOFFS_EXTERNAL_H
+#endif //MY_MCSP_ELF_DBMS_LVL_RANGES_EXTERNAL_H
