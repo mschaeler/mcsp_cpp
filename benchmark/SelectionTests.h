@@ -247,6 +247,7 @@ public:
     : scale(_scale)
     , num_query_sets(selectivities.size())
     , num_queries(_num_queries)
+    , all_queries(0)
     {
         rand.seed(123);
         for(int column=0; column<max_column;column++) {
@@ -255,7 +256,7 @@ public:
                 SelectionQuerySet set(column, selectivities.at(s), scale, num_queries, rand);
                 queries.push_back(set);
             }
-            this->all_queries.push_back(queries);
+            all_queries.push_back(queries);
         }
         cout << "Created" << all_queries.size() << " p values" << endl;
         for(vector<SelectionQuerySet> set : all_queries) {

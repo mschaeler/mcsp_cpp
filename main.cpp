@@ -14,6 +14,7 @@
 #include "elf/Elf_Dbms_Lvl_Cutoffs.h"
 #include "elf/Elf_Dbms_Lvl_Ranges.h"
 #include "elf_cutoff_external/Elf_Table_Cutoff_External.h"
+#include "elf_cutoff_external/Elf_Dbms_Lvl_Cutoffs_External.h"
 
 void run_p_benchmark(double scale){
     DatabaseSystem* dbms;
@@ -67,15 +68,17 @@ int main() {
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
     double scale = 1;
     cout << "scale="<<scale<<endl;
-    test_something(0.1);
+    //test_something(0.1);
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Ranges(),new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
-    //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
+    //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new MyHyper()};
 
+    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 10, false);
     //run_p_benchmark(scale);
 
     std::cout << "Bye, Bye!" << std::endl;
