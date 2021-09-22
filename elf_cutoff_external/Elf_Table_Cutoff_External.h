@@ -16,7 +16,7 @@ public:
     const int first_level_with_monolists;
     const vector<int> cutoffs;
 
-    static const bool USE_MEMCOPY = false;
+    static const bool USE_MEMCOPY = true;
 
     Elf_Table_Cutoff_External(
             string& name
