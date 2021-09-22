@@ -11,11 +11,16 @@
 #include <iostream>
 #include <fstream> //file writing
 
-
 using namespace std;
 
 class Util {
 public:
+   /**
+   * This variable states the column order used for evaluations etc. Default is that we use the column order as posted in the TKDE
+   * paper. Alternatively, we order by increasing cardinality, i.e., put the smallest ones first.
+   */
+    const static bool USE_TKDE_ORDER = false;
+
     const static long seed = 12345678;
     /** s=1 */
     const static int NUM_TUPLES_S_ONE = 6000000;//6,000,000
@@ -48,6 +53,24 @@ public:
         int l_partkey	=12;
         int l_orderkey	=13;
         int l_extendedprice=14;
+
+        if(!USE_TKDE_ORDER){
+            l_shipdate	=8;
+            l_discount	=6;
+            l_quantity	=7;
+            l_linestatus=0;
+            l_returnflag=1;
+            l_shipinstr	=2;
+            l_shipmode	=3;
+            l_linenumber=4;
+            l_tax		=5;
+            l_commitdate=9;
+            l_receiptdate=10;
+            l_suppkey	=11;
+            l_partkey	=12;
+            l_orderkey	=13;
+            l_extendedprice=14;
+        }
 
         //l_orderkey
         tuple[l_orderkey] = rand()%(int)(s*SF_ORDERS);
@@ -102,6 +125,24 @@ public:
         size_t l_partkey	=12;
         size_t l_orderkey	=13;
         size_t l_extendedprice=14;
+
+        if(!USE_TKDE_ORDER){
+            l_shipdate	=8;
+            l_discount	=6;
+            l_quantity	=7;
+            l_linestatus=0;
+            l_returnflag=1;
+            l_shipinstr	=2;
+            l_shipmode	=3;
+            l_linenumber=4;
+            l_tax		=5;
+            l_commitdate=9;
+            l_receiptdate=10;
+            l_suppkey	=11;
+            l_partkey	=12;
+            l_orderkey	=13;
+            l_extendedprice=14;
+        }
 
         //l_orderkey
         all_data[offset+l_orderkey] = rand()%(int)(s*SF_ORDERS);
@@ -161,6 +202,24 @@ public:
         size_t l_partkey	=12;
         size_t l_orderkey	=13;
         size_t l_extendedprice=14;
+
+        if(!USE_TKDE_ORDER){
+            l_shipdate	=8;
+            l_discount	=6;
+            l_quantity	=7;
+            l_linestatus=0;
+            l_returnflag=1;
+            l_shipinstr	=2;
+            l_shipmode	=3;
+            l_linenumber=4;
+            l_tax		=5;
+            l_commitdate=9;
+            l_receiptdate=10;
+            l_suppkey	=11;
+            l_partkey	=12;
+            l_orderkey	=13;
+            l_extendedprice=14;
+        }
 
         cout << "Util::getDataTPCHTuple_columnar(vec<vec<int>>, "<<s<<")";
 
@@ -223,6 +282,24 @@ public:
         size_t l_partkey	=12;
         size_t l_orderkey	=13;
         size_t l_extendedprice=14;
+
+        if(!USE_TKDE_ORDER){
+            l_shipdate	=8;
+            l_discount	=6;
+            l_quantity	=7;
+            l_linestatus=0;
+            l_returnflag=1;
+            l_shipinstr	=2;
+            l_shipmode	=3;
+            l_linenumber=4;
+            l_tax		=5;
+            l_commitdate=9;
+            l_receiptdate=10;
+            l_suppkey	=11;
+            l_partkey	=12;
+            l_orderkey	=13;
+            l_extendedprice=14;
+        }
 
         //l_orderkey
         all_data[column_offsets[l_orderkey]+tid] = rand()%(int)(s*SF_ORDERS);
@@ -313,24 +390,45 @@ public:
     }
 
     static vector<string> get_tpch_linetime_column_names(){
-        vector<string> TPC_H_LINEITEM_COLUMN_NAMES = {
-                "l_shipdate"
-                ,"l_discount"
-                ,"l_quantity"
-                ,"l_linestatus"
-                ,"l_returnflag"
-                ,"l_shipinstr"
-                ,"l_shipmode"
-                ,"l_linenumber"
-                ,"l_tax"
-                ,"l_commitdate"
-                ,"l_receiptdate"
-                ,"l_suppkey"
-                ,"l_partkey"
-                ,"l_orderkey"
-                ,"l_extendedprice"
-        };
-        return TPC_H_LINEITEM_COLUMN_NAMES;
+        if(USE_TKDE_ORDER){
+            vector<string> TPC_H_LINEITEM_COLUMN_NAMES = {
+                    "l_shipdate"
+                    ,"l_discount"
+                    ,"l_quantity"
+                    ,"l_linestatus"
+                    ,"l_returnflag"
+                    ,"l_shipinstr"
+                    ,"l_shipmode"
+                    ,"l_linenumber"
+                    ,"l_tax"
+                    ,"l_commitdate"
+                    ,"l_receiptdate"
+                    ,"l_suppkey"
+                    ,"l_partkey"
+                    ,"l_orderkey"
+                    ,"l_extendedprice"
+            };
+            return TPC_H_LINEITEM_COLUMN_NAMES;
+        }else{
+            vector<string> TPC_H_LINEITEM_COLUMN_NAMES = {
+                    "l_linestatus"
+                    ,"l_returnflag"
+                    ,"l_shipinstr"
+                    ,"l_shipmode"
+                    ,"l_linenumber"
+                    ,"l_tax"
+                    ,"l_discount"
+                    , "l_quantity"
+                    ,"l_shipdate"
+                    ,"l_commitdate"
+                    ,"l_receiptdate"
+                    ,"l_suppkey"
+                    ,"l_partkey"
+                    ,"l_orderkey"
+                    ,"l_extendedprice"
+            };
+            return TPC_H_LINEITEM_COLUMN_NAMES;
+        }
     }
 
     static vector<vector<int>> getDataTPCH(double s){
@@ -461,6 +559,19 @@ public:
                 ,SF_ORDERS
                 ,SF_LINEITEM
         };
+        if(!USE_TKDE_ORDER) {
+            cardinalities[0] = 1;
+            cardinalities[1] = 3;
+            cardinalities[2] = 3;
+            cardinalities[3] = 6;
+            cardinalities[4] = 6;
+            cardinalities[5] = 8;
+            cardinalities[6] = 11;
+            cardinalities[7] = 50;
+            cardinalities[8] = 2720;
+            cardinalities[9] = 2689;
+            cardinalities[10] = 2750;
+        }
 
         // change scale-factor-dependned values
         cardinalities[11] = (int)((double)cardinalities[11]*scale);
@@ -587,6 +698,16 @@ public:
             table_data.push_back(temp_column);
         }
         return table_data;
+    }
+
+    static int32_t max(const vector<int>& column){
+        int32_t max = INT_MIN;
+        for(int tid : column){
+            if(tid>max){
+                max = tid;
+            }
+        }
+        return max;
     }
 };
 

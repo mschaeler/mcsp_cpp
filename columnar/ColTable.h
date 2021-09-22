@@ -31,6 +31,11 @@ public:
     //, columns(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)) )
     , columns(Util::getDataTPCHTuple_columnar(s))
     {
+        cout << "cardinalities\t";
+        for(auto& c : columns){
+            cout << Util::max(c)<<"\t";
+        }
+        cout << endl;
         /*//Util::getDataTPCHTuple_columnar(columns, s);
         if(exists(s)){
             vector<vector<int>> raw_columns = Util::read_columnar_table(get_file(s), num_dim, size());
