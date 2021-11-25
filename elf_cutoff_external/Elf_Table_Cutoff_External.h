@@ -642,7 +642,12 @@ private:
                     if(!Util::isIn(elem_val, lower, upper)) {
                         const int from = cutoff(elem_where_run_start);
                         const int to = cutoff(elem_offset);
-                        copy(from, to, level, tids);//Note, the case that we hit the level end may not occur here.
+                        //Note, the case that we hit the level end may not occur here.
+                        if(level < first_level_with_monolists){
+                            copy(from, to,tids);//None safe version
+                        }else{
+                            copy(from, to, level, tids);//Safe version
+                        }
                         materialized = true;
                         elem_offset++;//next elem
                         break;//go to first while
@@ -662,7 +667,12 @@ private:
             }else{
                 to = cutoff(elem_offset+1);
             }
-            copy(from, to, level, tids);//Note, the case that we hit the level end may not occur here.
+            //Note, the case that we hit the level end may not occur here.
+            if(level < first_level_with_monolists){
+                copy(from, to,tids);//None safe version
+            }else{
+                copy(from, to, level, tids);//Safe version
+            }
         }
     }
 

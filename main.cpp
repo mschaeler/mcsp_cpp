@@ -17,22 +17,12 @@
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Cutoffs_External.h"
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Ranges_External.h"
 
-void run_p_benchmark(double scale){
+void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms){
     DatabaseSystem* dbms;
     Table* t;
     int num_queries_per_set = 10;
     int num_query_sets = 10;
     SelectionTests experiment(scale, num_query_sets, num_queries_per_set);
-    //experiment.check_mcsp(new Elf_Dbms_Lvl());
-
-
-    //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper(), new MyMonetDB()};
-    //vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new MyMonetDB_II(), new MyRowiseHyper()};
-    //vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB(), new Elf_Dbms_Lvl()};
-    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl()};
-    //vector<DatabaseSystem*> all_dbms = {new MyHyper(), new MyMonetDB()};
-    vector<DatabaseSystem*> all_dbms = {new MyHyper()};
-
     experiment.p_benchmark(all_dbms, false);
 }
 
@@ -67,11 +57,11 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
-    double scale = 0.1;
+    double scale = 20;
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
-    SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl_Ranges_External());
+    //SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl_Ranges_External());
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed(),new MyRowiseHyper()};
@@ -81,10 +71,10 @@ int main() {
     //vector<DatabaseSystem*> all_dbms = {new MyHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(), new MyHyper()};
 
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
-    //run_p_benchmark(scale);
+    run_p_benchmark(scale, all_dbms);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;
