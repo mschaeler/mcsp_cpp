@@ -67,9 +67,11 @@ int main() {
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
-    double scale = 20;
+    double scale = 0.1;
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
+
+    SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl_Ranges_External());
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed(),new MyRowiseHyper()};
@@ -81,7 +83,7 @@ int main() {
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};
 
-    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
+    //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
     //run_p_benchmark(scale);
 
     std::cout << "Bye, Bye!" << std::endl;

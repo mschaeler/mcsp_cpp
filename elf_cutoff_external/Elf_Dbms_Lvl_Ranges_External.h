@@ -16,8 +16,7 @@ class Elf_Dbms_Lvl_Ranges_External : public Elf_Dbms_Lvl {
         if(column_indexes.size()==1){
             select_1(elf, column_indexes.at(0), predicates.at(0).at(LOWER), predicates.at(0).at(UPPER));
         }else{
-            cout << "implement me mcsp" << endl;
-            //return select_mcsp(elf, column_numbers, predicates);
+            select_mcsp(elf, column_indexes, predicates);
         }
         return result_buffer;
     }
@@ -81,6 +80,32 @@ private:
             elf.select_1_ranges_no_monolists_above(offset, stop_level, level, result_buffer, lower, upper);//can us better copy() function
         }else{
             elf.select_1_ranges(offset, stop_level, level, result_buffer, lower, upper);//non-density bug requirees copy function using for loop
+        }
+    }
+    /**
+     * Invokes execution of an mcsp predicate using ranges.
+     * @param elf
+     * @param column_indexes
+     * @param predicates
+     */
+    void select_mcsp(const Elf_Table_Cutoff_External& elf, const vector<int>& column_indexes, const vector<vector<int>>& predicates){
+        /**********************************************************************************************************************
+		 * (1) - Handle the first selection predicate.
+		 * This produces the first Level synopsis, similar to MonetDB like operator at a time model
+         * ********************************************************************************************************************/
+        int level = column_indexes.at(0);
+        if(level==FIRST_DIM){
+            //Due to the hash-map, this special case is simpler. And we do not need to care for mono lists before this level, since there is none.
+            elf.select_mono_lists_until_first_predicate(column_indexes, predicates, result_buffer);
+        }else{
+            // This is the common way of starting an mcsp selection
+            // (1.1) check everything that became a mono list before first predicate
+            elf.select_mono_lists_until_first_predicate(column_indexes, predicates, result_buffer);
+
+            // (1.2) now scan the level itself. Important: the dim lists in the synopsis are in level columns[0]+1
+            int stop_level      = elf.level_stop(level);
+            int next_list_start = elf.level_start(level);
+            elf.select_mcsp_ranges(next_list_start, stop_level, level, result_buffer, column_indexes, predicates, 0);
         }
     }
 };

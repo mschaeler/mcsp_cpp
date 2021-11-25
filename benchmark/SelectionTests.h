@@ -393,6 +393,13 @@ public:
         cout << "SelectionTests dummy out" << endl;
     }
 
+    static void check_mcsp_queries(double scale, DatabaseSystem* to_test){
+        int num_query_sets = 10;
+        int num_queries = 10;
+        SelectionTests tester(scale, num_query_sets, num_queries);
+        tester.check_mcsp(to_test);
+    }
+
     void check_mcsp(DatabaseSystem* to_test){
         DatabaseSystem* base_line = new MyHyper();
 
@@ -419,7 +426,7 @@ public:
                         //System.out.println(query);
                         auto &columns = query.getColumns();
                         auto &predicates = query.getPredicate();
-                        cout << Util::to_string(columns) << " " << Util::to_string(predicates) << endl;
+                        cout <<"columns="<< Util::to_string(columns) << " predicates=" << Util::to_string(predicates) << endl;
                         auto &selectivities = query.getSelectivities();
                         Synopsis &synopsis = to_test->select(t, columns, predicates, selectivities);
                         Synopsis &synopsis_base_line = base_line->select(t_base_line, columns, predicates,

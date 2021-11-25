@@ -17,6 +17,7 @@ public:
     const vector<int> cutoffs;
 
     static const bool USE_MEMCOPY = true;
+    static const bool use_extended_cutoffs = false;
 
     Elf_Table_Cutoff_External(
             string& name
@@ -162,7 +163,472 @@ public:
         }
     }
 
+    void select_mono_lists_until_first_predicate(const vector<int>& columns, const vector<vector<int>>& predicates, Synopsis& tids
+    ) const {
+        //check all before the first predicate
+        for(int level=FIRST_DIM;level<=columns.at(0);level++){
+            const elf_pointer start_level = mono_list_level_start(level);
+            const elf_pointer stop_level  = mono_list_level_stop(level);
+            const int list_length 	      = length_monolist(level);
+
+            if(start_level!=stop_level){//there is at least one list
+                for(int list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
+                    select_monolist_add_tid(list_offset, level, columns, predicates, 0, tids);
+                }
+            }
+        }
+    }
+
+    /**
+     * Distributes to the right physical operator
+     * @param start_range
+     * @param stop_range
+     * @param level
+     * @param tids
+     * @param columns
+     * @param predicates
+     * @param predicate_index
+     */
+    void select_mcsp_ranges(
+            const elf_pointer start_range, const elf_pointer stop_range, const int level
+            , Synopsis& tids, const vector<int>& columns, const vector<vector<int>>& predicates, const int predicate_index
+        ) const {
+        if(SAVE_MODE) {
+            if(!is_node_length_offset(start_range)) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)" << endl;
+            }
+            if(!is_node_length_offset(stop_range)) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
+            }
+            if(get_level(start_range)!=level) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(start_range)!=level"<< endl;
+            }
+            if(get_level(stop_range-1)!=level) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(stop_range)!=level"<< endl;
+            }
+            if(level>columns.at(predicate_index)) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() level!=columns[predicate_index]"<< endl;
+            }
+        }
+        const bool has_selection 	   = columns.at(predicate_index)==level;
+        const int last_selected_level  = columns.at(columns.size()-1);
+        const bool has_final_selection = level == last_selected_level;
+
+        if(has_selection) {
+            if(has_final_selection) {
+                select_mcsp_ranges_final_selection(start_range, stop_range, level, tids, columns, predicates, predicate_index);
+            }else{
+                select_mcsp_ranges_non_terminal_selection(start_range, stop_range, level, tids, columns, predicates, predicate_index);
+            }
+        }else{
+            select_mcsp_ranges_descent(start_range, stop_range, level, tids, columns, predicates, predicate_index);
+        }
+    }
+
 private:
+    /**
+	 * In between there usually are levels without selections. We need to descent AND take care of all the monolists that start in this level.
+	 *
+	 * @param start_range - node head
+	 * @param stop_range  - node head
+	 * @param level
+	 * @param tids
+	 * @param columns
+	 * @param predicates
+	 * @param predicate_index
+	 */
+    void select_mcsp_ranges_descent(const elf_pointer start_range, const elf_pointer stop_range, const int level
+                                    , Synopsis& tids, const vector<int>& columns, const vector<vector<int>>& predicates
+                                    , const int predicate_index
+    ) const {
+        if(SAVE_MODE) {
+            if(Util::isIn(level, columns)) {
+                cout << "descent() trying to descent in level with selection" << endl;
+            }
+            if(!is_node_length_offset(start_range)){
+                cout << "descent() start_range is no node head"<< endl;
+            }
+            if(!is_node_length_offset(stop_range)){
+                cout << "descent() stop_range is no node head"<< endl;
+            }
+        }
+        //These are the pointers we want to find below
+        /** the first node in the next level in this range. It may not exist. */
+        int new_start_range = INT_MAX;
+        /** the first node in the next level not beeing in the range. It exists iff new_start_range exists*/
+        int new_stop_range  = INT_MIN;
+        /** the first node in the next level not beeing in the range*/
+        int first_mono_list = INT_MAX;
+        int last_mono_list  = INT_MIN;
+
+        /*****************************************************************************************************
+         * (1.1) find start of range in this dim. This is the first dim list pointer after
+         * start range.
+         * (1.2) find the mono lists that start in this range (i.e., level). We need to check all of them.
+         *
+         * We use a tiny optimization: the first dim elem after start range i either (1.1) or (1.2).
+         * We then continue search for the one that is missing.
+         *****************************************************************************************************/
+        elf_pointer elem_offset = start_range+1;//first elem after node head
+        elf_pointer elem_pointer = get_pointer(elem_offset);
+
+        //the first dim element after start_range is either a normal dim elem or a mono list
+        if(points_to_monolist(elem_pointer)) {
+            first_mono_list = elem_pointer&RECOVER_MASK;
+            new_start_range = get_new_start_range(elem_offset+1, stop_range);
+        }else{
+            new_start_range = elem_pointer;
+            if(use_extended_cutoffs){
+                first_mono_list = cutoff_monolist(start_range);
+            }else{
+                first_mono_list = get_first_mono_list(elem_offset+1, stop_range);
+            }
+        }
+
+        /******************************************************************************************************
+         * (2.1) and (2.2) - almost the same as above. But, we look for the range ends and iterate to the left.
+         ******************************************************************************************************/
+        elem_offset = stop_range-1;//first elem *before* node head
+        elem_pointer = get_pointer(elem_offset);
+
+        //TODO better abort flag?
+
+        if(points_to_monolist(elem_pointer)) {
+            last_mono_list = elem_pointer&RECOVER_MASK;
+            if(stop_range==values.size()) {
+                new_stop_range = stop_range;
+            }else{
+                elem_pointer = get_pointer(stop_range+1);
+                if(!points_to_monolist(elem_pointer)) {
+                    new_stop_range = elem_pointer;
+                }else {
+                    new_stop_range = get_new_stop_range(elem_offset-1, start_range);
+                }
+            }
+        }else{
+            new_stop_range = elem_pointer+get_node_size(elem_pointer)+NODE_HEAD_LENGTH;
+
+            if(use_extended_cutoffs){
+                last_mono_list = cutoff_monolist(stop_range);
+
+                if(first_mono_list==last_mono_list) {//The next monolist is behind stop_range
+                    first_mono_list = INT_MAX;
+                    last_mono_list  = INT_MIN;
+                }else{
+                    //Now it gets a little bit complicated: Without using extended cutoff last_mono_list points to the last mono list to *include*
+                    //By design, with extended cutoffs we point to the first to exclude, i.e., subtract one mono list length. That is length_monolist(level+1), as the mono lists start in the level below
+                    last_mono_list -= length_monolist(level+1);
+                }
+
+                if(SAVE_MODE) {
+                    elf_pointer first_mono_list_check = get_first_mono_list(start_range+1, stop_range);
+                    elf_pointer last_mono_list_check  = get_last_mono_list(stop_range-1, start_range);
+
+                    if(first_mono_list != first_mono_list_check) {
+                        cout << "select_mcsp_ranges_descent() Next monolist: cutoff says=" << first_mono_list << " but is at "+first_mono_list_check << endl;
+                    }
+                    if(last_mono_list != last_mono_list_check) {
+                        cout << "select_mcsp_ranges_descent() Last monolist: cutoff says=" << last_mono_list << " but is at "+last_mono_list_check << endl;
+                    }
+                }
+            }else{
+                last_mono_list = get_last_mono_list(elem_offset-1, start_range);
+            }
+        }
+        /******************************************************************************************************
+		 * (3.1) - We descend calling the function recursively.
+		 * (3.2) - All MonoLists that start here are checked immediately, because they are not visible
+		 * in the next level.
+		 ******************************************************************************************************/
+        scan_mono_lists_in_level(first_mono_list, last_mono_list, level+1, columns, predicates, predicate_index, tids);
+        if(new_start_range!=INT_MAX) {
+            select_mcsp_ranges(new_start_range, new_stop_range, level+1, tids, columns, predicates, predicate_index);
+        }
+    }
+
+    void scan_mono_lists_in_level(const elf_pointer first_mono_list, const elf_pointer last_mono_list, const int level
+            , const vector<int>& columns, const vector<vector<int>>& predicates, const int predicate_index, Synopsis& tids
+    ) const {
+        const int list_length = length_monolist(level);
+        for(elf_pointer list_offset = first_mono_list;list_offset<=last_mono_list;list_offset+=list_length){//note the <=
+            select_monolist_add_tid(list_offset, level, columns, predicates, predicate_index, tids);
+        }
+    }
+
+    elf_pointer get_first_mono_list(const elf_pointer start, const elf_pointer stop) const {
+        elf_pointer elem_offset = start;
+        while (elem_offset<stop) {
+            if(!is_node_length_offset(elem_offset)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                elf_pointer elem_pointer = get_pointer(elem_offset);
+                if(points_to_monolist(elem_pointer)) {
+                    return elem_pointer&RECOVER_MASK;
+                }
+            }
+            elem_offset++;//next elem
+        }
+        return INT_MAX;//No dim element in this range
+    }
+
+    elf_pointer get_last_mono_list(const elf_pointer offset, const elf_pointer start_range) const {
+        elf_pointer elem_offset = offset;
+        while (elem_offset>=start_range) {
+            if(!is_node_length_offset(elem_offset)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                elf_pointer elem_pointer = get_pointer(elem_offset);
+                if(points_to_monolist(elem_pointer)) {
+                    return elem_pointer&RECOVER_MASK;
+                }
+            }
+            elem_offset--;//next elem
+        }
+        return INT_MIN;//No dim element in this range
+    }
+
+    /**
+ * Non-final selection with ranges.
+ * @param start_range
+ * @param stop_range
+ * @param level
+ * @param tids
+ * @param columns
+ * @param predicates
+ * @param predicate_index
+ */
+    void select_mcsp_ranges_non_terminal_selection(
+            const elf_pointer start_range, const elf_pointer stop_range, const int level
+            , Synopsis& tids, const vector<int>& columns, const vector<vector<int>>& predicates, const int predicate_index
+    ) const {
+        if(SAVE_MODE) {
+            if(!is_node_length_offset(start_range)) {
+                cout <<"scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)" << endl;
+            }
+            if(!is_node_length_offset(stop_range)) {
+                cout <<"scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
+            }
+            if(get_level(start_range)!=level) {
+                cout <<"scan_mcsp_level_preorder_cutoff_ranges() getLevel(start_range)!=level" << endl;
+            }
+            if(get_level(stop_range-1)!=level) {
+                cout <<"scan_mcsp_level_preorder_cutoff_ranges() getLevel(stop_range)!=level" << endl;
+            }
+            if(level!=columns[predicate_index]) {
+                cout <<"scan_mcsp_level_preorder_cutoff_ranges() level!=columns[predicate_index]" << endl;
+            }
+        }
+        //the predicates as literals
+        const int lower = predicates.at(predicate_index).at(0);
+        const int upper = predicates.at(predicate_index).at(1);
+
+        //stuff for the iteration
+        elf_pointer elem_offset = start_range;
+        elf_pointer elem_where_run_start=-1;
+        elf_pointer elem_pointer_where_run_start=-1;
+        /** Flag indicating that there is an un-materialized result run.*/
+        bool materialized = false;
+
+        /*******************************
+         * for each node in this range *
+         *******************************/
+        while (elem_offset<stop_range) {
+            /***************************************************************
+             * (1) First inner while for finding the start of a result run *
+             * The first while is equivalent to the MonoColumn Selection   *
+             * Except that we also store the elem where run starts
+             ***************************************************************/
+            while (elem_offset<stop_range) {
+                const int elem_val = get_value(elem_offset);
+                if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                    if(Util::isIn(elem_val, lower, upper)) {
+                        elf_pointer elem_pointer = get_pointer(elem_offset);
+                        if(points_to_monolist(elem_pointer)) {
+                            // We do not start result runs at MonoLists....
+                            elem_pointer&=RECOVER_MASK;
+                            select_monolist_add_tid(elem_pointer, level+1, columns, predicates, predicate_index+1, tids);
+                        }else{
+                            elem_pointer_where_run_start = elem_pointer;
+                            elem_where_run_start = elem_offset;
+                            materialized = false;
+                            elem_offset++;//next elem
+                            break;//Go to second inner while to find the end of the run. I know it is break...
+                        }
+                    }
+                }
+                elem_offset++;//next elem
+            }
+            /***************************************************************
+             * (2) Second inner while for finding the end of a result run  *
+             * There is a similar while in  MonoColumn Selection. This one *
+             * however is more complicated...
+             ***************************************************************/
+            while (elem_offset<stop_range) {
+                const int elem_val = get_value(elem_offset);
+                if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                    elf_pointer elem_pointer = get_pointer(elem_offset);
+                    if(points_to_monolist(elem_pointer)) { // We treat monolists totally independent of the ranges
+                        if(Util::isIn(elem_val, lower, upper)) {
+                            elem_pointer&=RECOVER_MASK;
+                            select_monolist_add_tid(elem_pointer, level+1, columns, predicates, predicate_index+1, tids);
+                        }
+                    }else{
+                        //System.err.println("elem="+elem_offset+" val="+elem_val);
+                        if(!Util::isIn(elem_val, lower, upper)) {
+                            select_mcsp_ranges(elem_pointer_where_run_start, elem_pointer, level+1,tids, columns, predicates, predicate_index+1);
+                            materialized = true;
+                            elem_offset++;//next elem
+                            break;//go to first while
+                        }
+                    }
+                }
+                elem_offset++;//next elem
+            }
+            //System.out.println("Level = "+level +" size="+tids.size()+" @elem="+(elem_offset));
+        }
+
+        //last run in this range. Not necessarily level end
+        if(!materialized && elem_pointer_where_run_start != -1) {//the last run lasts until level end
+            elf_pointer new_stop_range;
+            if(elem_offset == level_stop(level)) {
+                new_stop_range = level_stop(level+1);
+            }else {
+                int elem_pointer = get_pointer(stop_range+1);//First *element* in the first node not part of the result
+                if(!points_to_monolist(elem_pointer)) {
+                    new_stop_range = elem_pointer;
+                }else {
+                    new_stop_range=get_new_stop_range(stop_range-1, start_range);//Init with last node still inside the result run
+                }
+            }
+            select_mcsp_ranges(elem_pointer_where_run_start, new_stop_range, level+1,tids, columns, predicates, predicate_index+1);
+        }
+    }
+
+    elf_pointer get_new_start_range(const elf_pointer start, const elf_pointer stop) const {
+        elf_pointer elem_offset = start;
+        while (elem_offset<stop) {
+            if(!is_node_length_offset(elem_offset)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                elf_pointer elem_pointer = get_pointer(elem_offset);
+                if(!points_to_monolist(elem_pointer)) {
+                    return elem_pointer;
+                }
+            }
+            elem_offset++;//next elem
+        }
+        return INT_MAX;//No dim element in this range
+    }
+
+    elf_pointer get_new_stop_range(const elf_pointer offset, const elf_pointer start_range) const {//XXX finde ich so scheiße
+        elf_pointer elem_offset = offset;
+        while (elem_offset>=start_range) {
+            if(!is_node_length_offset(elem_offset)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                elf_pointer elem_pointer = get_pointer(elem_offset);
+                if(!points_to_monolist(elem_pointer)) {
+                    return elem_pointer+get_node_size(elem_pointer)+NODE_HEAD_LENGTH;
+                }
+            }
+            elem_offset--;//next elem
+        }
+        return INT_MAX;//No dim element in this range
+    }
+
+    /**
+ * Final selection level
+ * @param start_range
+ * @param stop_range
+ * @param level
+ * @param tids
+ * @param columns
+ * @param predicates
+ * @param predicate_index
+ */
+    void select_mcsp_ranges_final_selection(
+            const elf_pointer start_range, const elf_pointer stop_range, const int level
+            , Synopsis& tids, const vector<int>& columns, const vector<vector<int>>& predicates, const int predicate_index
+    ) const {
+        if(SAVE_MODE) {
+            if(!is_node_length_offset(start_range)) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)"<< endl;
+            }
+            if(!is_node_length_offset(stop_range)) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
+            }
+            if(get_level(start_range)!=level) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(start_range)!=level"<< endl;
+            }
+            if(get_level(stop_range-1)!=level) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(stop_range)!=level"<< endl;
+            }
+            if(level!=columns[predicate_index]) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() level!=columns[predicate_index]"<< endl;
+            }
+            if(columns.at(columns.size()-1)!=level) {
+                cout << "scan_mcsp_level_preorder_cutoff_ranges() should be last selection"<< endl;
+            }
+        }
+        //the predicates as literals
+        const int lower = predicates.at(predicate_index).at(0);
+        const int upper = predicates.at(predicate_index).at(1);
+
+        //stuff for the iteration
+        elf_pointer elem_offset = start_range;
+        elf_pointer elem_where_run_start = NOT_FOUND;
+        /** Flag indicating that there is an un-materialized result run.*/
+        bool materialized = false;
+
+        /*******************************
+         * for each node in this range *
+         *******************************/
+        while (elem_offset<stop_range) {
+            /***************************************************************
+             * (1) First inner while for finding the start of a result run *
+             * The first while is equivalent to the MonoColumn Selection   *
+             * Except that we also store the elem where run starts
+             ***************************************************************/
+            while (elem_offset<stop_range) {
+                const int elem_val = get_value(elem_offset);
+                if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                    if(Util::isIn(elem_val, lower, upper)) {
+                        // We found a result run
+                        elem_where_run_start = elem_offset;
+                        materialized = false;
+                        elem_offset++;//next elem
+                        break;//Go to second inner while to find the end of the run. I know it is break...
+                    }
+                }
+                elem_offset++;//next elem
+            }
+            /***************************************************************
+             * (2) Second inner while for finding the end of a result run  *
+             * There is a similar while in  MonoColumn Selection. This one *
+             * however is more complicated...
+             ***************************************************************/
+            while (elem_offset<stop_range) {
+                const int elem_val = get_value(elem_offset);
+                if(!is_node_length(elem_val)) {//ignore node heads. Here we find the length of the node, with its MSB set.
+                    if(!Util::isIn(elem_val, lower, upper)) {
+                        const int from = cutoff(elem_where_run_start);
+                        const int to = cutoff(elem_offset);
+                        copy(from, to, level, tids);//Note, the case that we hit the level end may not occur here.
+                        materialized = true;
+                        elem_offset++;//next elem
+                        break;//go to first while
+                    }
+                }
+                elem_offset++;//next elem
+            }
+            //System.out.println("Level = "+level +" size="+tids.size()+" @elem="+(elem_offset));
+        }
+
+        //last run in this range. Not necessarily level end
+        if(!materialized && elem_where_run_start != NOT_FOUND) {//the last run lasts until level end
+            const int from = cutoff(elem_where_run_start);
+            int to;
+            if(level_stop(level) == elem_offset) {
+                to = tids_in_elf_order.size();
+            }else{
+                to = cutoff(elem_offset+1);
+            }
+            copy(from, to, level, tids);//Note, the case that we hit the level end may not occur here.
+        }
+    }
+
     int select_1_node(const elf_pointer node_offset, const int level, const int lower, const int upper, Synopsis& tids) const {
         const int length = get_node_size(node_offset);
         /**
@@ -351,13 +817,23 @@ private:
         return level_stop(elem_level)==elem_offset+1;
     }
 
-    inline int cutoff(const int elem_offset) const {
+    inline int cutoff(const elf_pointer elem_offset) const {
         if(SAVE_MODE) {
             if(is_node_length_offset(elem_offset) && elem_offset >= level_stop(1)) {
                 cout << "cutoff(int) called for node, not for element" << endl;
             }
         }
         if(LOG_COST){read_cost++;}
+        return cutoffs.at(elem_offset);
+    }
+
+    inline int cutoff_monolist(const elf_pointer elem_offset) const {
+        if(SAVE_MODE) {
+            if(!is_node_length_offset(elem_offset) && elem_offset >= level_stop(1)) {
+                cout <<"cutoff_monolist(int) called for element, not for node" << endl;
+            }
+        }
+        if(LOG_COST) {read_cost++;}
         return cutoffs.at(elem_offset);
     }
 
