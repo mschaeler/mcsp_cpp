@@ -225,6 +225,43 @@ public:
         }
     }
 
+    void select_mcsp_ranges_first_level(const vector<int>& columns, const vector<vector<int>>& predicates, Synopsis& tids) const {
+        if(SAVE_MODE){
+            if(columns.at(0) != FIRST_DIM){
+                cout << "select_c level != columns[check_predicate]" << endl;
+            }
+        }
+
+        const int lower = predicates.at(FIRST_DIM).at(0);
+        const int upper = predicates.at(FIRST_DIM).at(1);
+        const int level = FIRST_DIM;
+
+        elf_pointer elem_pointer = get_pointer(lower);
+        if(elem_pointer == EMPTY_ROOT_NODE) {
+            elem_pointer = get_pointer(lower+1);//TODO while
+            if(SAVE_MODE) {
+                if(elem_pointer == EMPTY_ROOT_NODE) {
+                    cout << "select_mono_first_dim() from points to empty root node" << endl;
+                }
+            }
+        }
+
+        elf_pointer start_range = elem_pointer;
+        elf_pointer stop_range;
+        if(upper==level_stop(level)-1) {
+            stop_range = level_stop(level+1);
+        } else {
+            elem_pointer = get_pointer(upper+1);
+            if(SAVE_MODE) {
+                if(elem_pointer == EMPTY_ROOT_NODE) {
+                    cout << "select_mono_first_dim() to points to empty root node" << endl;
+                }
+            }
+            stop_range = elem_pointer;
+        }
+        select_mcsp_ranges(start_range, stop_range, level+1,tids, columns, predicates, 1);
+    }
+
 private:
     /**
 	 * In between there usually are levels without selections. We need to descent AND take care of all the monolists that start in this level.

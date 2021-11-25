@@ -96,7 +96,7 @@ private:
         int level = column_indexes.at(0);
         if(level==FIRST_DIM){
             //Due to the hash-map, this special case is simpler. And we do not need to care for mono lists before this level, since there is none.
-            elf.select_mono_lists_until_first_predicate(column_indexes, predicates, result_buffer);
+            elf.select_mcsp_ranges_first_level(column_indexes, predicates, result_buffer);
         }else{
             // This is the common way of starting an mcsp selection
             // (1.1) check everything that became a mono list before first predicate
