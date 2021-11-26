@@ -71,10 +71,11 @@ int main() {
     //vector<DatabaseSystem*> all_dbms = {new MyHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(), new MyHyper()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new MyHyper()};
 
-    //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
-    run_p_benchmark(scale, all_dbms);
+
+    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
+    //run_p_benchmark(scale, all_dbms);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;

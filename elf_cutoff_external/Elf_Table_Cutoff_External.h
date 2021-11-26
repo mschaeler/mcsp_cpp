@@ -75,10 +75,16 @@ public:
             const elf_pointer start_level, const elf_pointer stop_level, const int level
             , Synopsis& tids, const int lower, const int upper
     ) const {
-
         int offset = start_level;
-        while (offset<stop_level) {//for each node in this level
-            offset = select_1_node(offset, level, lower, upper, tids);
+        if(level < first_level_with_monolists){
+            //Special case: if there no mono lists until my level, we do not need to tkae of them.
+            while (offset<stop_level) {//for each node in this level
+                offset = select_1_node_no_monolists_above(offset, level, lower, upper, tids);
+            }
+        }else{
+            while (offset<stop_level) {//for each node in this level
+                offset = select_1_node(offset, level, lower, upper, tids);
+            }
         }
     }
 
@@ -714,6 +720,50 @@ private:
                 if(Config::LOG_COST) {write_cost++;}
             }else {
                 collect_tids_last_node_element(elem_offset, level, tids);
+            }
+        }
+        return node_offset + NODE_HEAD_LENGTH+length;//point to next node
+    }
+
+    /**
+     * Special function which can be called if level < first_level_with_monolists
+     * This simplifies the algorithm and reduces its cost in two ways.
+     * (1) We do not need to check the pointer of an element whether it is start of mono lists halfing the costs for reading the level.
+     * (2) At the last element, we can safely use the cutoff of the next element, as it is always defined and the non-density bug does not occur.
+     *
+     * @param node_offset
+     * @param level
+     * @param lower
+     * @param upper
+     * @param tids
+     * @return
+     */
+    int select_1_node_no_monolists_above(const elf_pointer node_offset, const int level, const int lower, const int upper, Synopsis& tids) const {
+        if(SAVE_MODE){
+            if(level>=first_level_with_monolists){
+                cout << "select_1_node_no_monolists_above() level>=first_level_with_monolists" << endl;
+            }
+        }
+        const int length = get_node_size(node_offset);
+        /**
+         * For each elem in this node. s we know there are no MonoLists above it is save to take the cutoff of the next element.
+         * Even if it belongs to the next node or next level.
+         */
+        for(int elem=0;elem<length;elem++){//Should work always, even if the next element is in the next level. There is at least one level below.
+            const elf_pointer elem_offset = node_offset+NODE_HEAD_LENGTH+elem;//+NODE_HEAD_LENGTH for explicit length
+            const int elem_val = get_value(elem_offset);
+            if(Util::isIn(elem_val, lower, upper)) {
+                elf_pointer from, to;
+                from = cutoff(elem_offset);
+                elf_pointer next_elem_offset = (elem == length-1) ? elem_offset+2 : elem_offset+1;//for the last node element a the next offset is a node head. Thus, we increment by 2.
+                if(next_elem_offset>level_stop(level)){//next element is in the next elvel, which points to tid_offset 0, i.e., cannot use it.
+                    to = tids_in_elf_order.size();
+                }else{
+                    to = cutoff(next_elem_offset);
+                }
+                copy(from,to,tids);
+            }else if(elem_val > upper){
+                return node_offset + NODE_HEAD_LENGTH+length;//point to next elem
             }
         }
         return node_offset + NODE_HEAD_LENGTH+length;//point to next node
