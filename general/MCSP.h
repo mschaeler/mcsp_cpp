@@ -138,14 +138,17 @@ public:
         }else {
             num_columns = 1+rand.nextInt(max_num_columns-1);
         }
+        num_columns = max_num_columns;
         diceColumns(table_dimensionality, num_columns);
         //for each dice column create the predicate
         for(int i=0;i<columns.size();i++) {
             int column = columns.at(i);
-            selectivities.push_back(base_selectivities[rand.nextInt(base_selectivities.size())]);
+            double sel = base_selectivities[rand.nextInt(base_selectivities.size())];
+            selectivities.push_back(sel);
             vector<int> sinlge_predicate = single_column_predicate(column, cardinalities, rand, selectivities[i]);
             predicates.push_back(sinlge_predicate);
         }
+        //cout << "sel[] = " << Util::to_string(selectivities) << endl;
     }
 
     vector<vector<int>>& getPredicate(){

@@ -374,7 +374,7 @@ public:
     static string to_string(vector<double> vec){
         string str;
         str.append("(");
-        for(int s : vec){
+        for(double s : vec){
             str.append(std::__cxx11::to_string(s)+", ");
         }
         str.replace(str.length()-2,1,")");

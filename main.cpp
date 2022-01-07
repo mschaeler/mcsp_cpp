@@ -21,7 +21,7 @@ void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms){
     DatabaseSystem* dbms;
     Table* t;
     int num_queries_per_set = 10;
-    int num_query_sets = 10;
+    int num_query_sets = 20;
     SelectionTests experiment(scale, num_query_sets, num_queries_per_set);
     experiment.p_benchmark(all_dbms, false);
 }
@@ -71,11 +71,11 @@ int main() {
     //vector<DatabaseSystem*> all_dbms = {new MyHyper};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new MyHyper()};
-
-
-    SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
-    //run_p_benchmark(scale, all_dbms);
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
+    vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed(), new Elf_Dbms_Lvl_Ranges_External()};
+    //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
+    run_p_benchmark(scale, all_dbms);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;

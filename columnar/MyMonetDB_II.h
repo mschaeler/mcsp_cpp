@@ -47,6 +47,35 @@ class MyMonetDB_Indexed : public MyMonetDB{
     static const bool USE_BUILD_IN_COPY = true;
 
     Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
+        int size = column_indexes.size();
+        if(size == 1){//nothing to sort
+            return select_internal(t,column_indexes,predicates,selectivities);
+        }
+        vector<Selecticity> to_sort;
+        for(int i=0;i<size;i++){
+            Selecticity temp(column_indexes.at(i), predicates.at(i).at(LOWER), predicates.at(i).at(UPPER), selectivities.at(i));
+            to_sort.push_back(temp);
+        }
+        //Selecticity::out(to_sort);
+        //sort
+        std::sort(to_sort.begin(), to_sort.end());
+        //Selecticity::out(to_sort);
+        // copy because otherwise we alter the data of query itself as it is passed by reference
+        vector<int> _column_indexes(size);
+        vector<vector<int>> _predicates(size, vector<int>(2));
+        vector<double> _selectivities(size);
+        for(int i=0;i<size;i++){
+            _column_indexes.at(i)  	    = to_sort.at(i).column_indexes;
+            _predicates.at(i).at(LOWER) = to_sort.at(i).lower;
+            _predicates.at(i).at(UPPER) = to_sort.at(i).upper;
+            _selectivities.at(i) 	    = to_sort.at(i).selectivity;
+        }
+        //cout << Util::to_string(column_indexes) << " sel=" << Util::to_string(selectivities) << " after: ";
+        //cout << Util::to_string(_column_indexes) << " sel=" << Util::to_string(_selectivities) << endl;
+        return select_internal(t,_column_indexes,_predicates,_selectivities);
+    }
+
+    Synopsis& select_internal(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
         ColTable_Indexed& table = dynamic_cast<ColTable_Indexed &>(t);
         //first predicate produces the first synopsis
         Synopsis& s = mono_column_select(table, column_indexes[0], predicates[0][LOWER], predicates[0][UPPER]);
