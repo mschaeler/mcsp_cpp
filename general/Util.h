@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <fstream> //file writing
+#include <climits>
 
 using namespace std;
 

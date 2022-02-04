@@ -280,7 +280,7 @@ public:
             double p = p_values[i];
             vector<SelectionQuerySet> current;// = all_queries.at(i);
             //SelectionQuerySet.PROB_INCREASE_PER_COLUMN = p;
-            int max_num_columns = 2;
+            int max_num_columns = 4;
             cout << "Creating queries for p="+ to_string(p) << " max_num_columns=" << max_num_columns << endl;
             for(int set=0;set<num_query_sets;set++) {
                 SelectionQuerySet temp (default_selectivities, p, scale, num_queries, max_num_columns, rand);
