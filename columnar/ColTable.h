@@ -71,7 +71,7 @@ public:
         }
     }*/
 
-    int size() {return columns[0].size();}
+    uint64_t size() {return columns[0].size();}
 
     string out(){
         std::stringstream ss;

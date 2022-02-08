@@ -420,7 +420,7 @@ public:
             return exists_mono(pointer,query,FIRST_DIM+1);
         }
     }
-    int size(){
+    uint64_t size(){
         return 0;//XXX
     }
 
