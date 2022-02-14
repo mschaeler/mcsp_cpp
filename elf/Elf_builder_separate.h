@@ -588,6 +588,7 @@ public:
         get_max_column_value(max_values);
     }
     static Elf_table_lvl_seperate* build(ColTable& table){
+        cout << "before build()" << endl;
         Elf_builder_separate separate (table);
         cout << "build()" << endl;
         separate.build();

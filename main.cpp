@@ -51,13 +51,39 @@ void test_something(double scale){
      */
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    double scale = 1.0;
 
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
+    if(argc>1){
+        cout << "Command line args="<< argc << ": " << endl;
+        for(int i=0;i<argc;i++){
+            cout << "argv[" << i << "] " << argv[i] << endl;
+            if(std::string(argv[i]) == "--s"){
+                cout << "Found --s at i=" << i << endl;
+                if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+                    std::string to_parse(argv[++i]);
+                    std::stringstream str(to_parse);
+                    double temp;
+                    str >> temp;
+                    if (!str){
+                        cout << "The conversion failed: " << to_parse << endl;
+                    }else{
+                        cout << "temp=" << temp << endl;
+                        scale = temp;
+                    }
+                } else { // Uh-oh, there was no argument to the destination option.
+                    cout << "--destination option requires one argument." << std::endl;
+                    return 1;
+                }
+            }
+        }
+    }
+
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
     cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << endl;
-    double scale = 30;
+
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
@@ -72,8 +98,8 @@ int main() {
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
-    //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed(), new Elf_Dbms_Lvl_Ranges_External()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
     run_p_benchmark(scale, all_dbms);
 
