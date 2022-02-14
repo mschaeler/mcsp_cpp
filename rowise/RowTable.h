@@ -28,7 +28,7 @@ public:
 
     }
 
-    int size() {return tuples.size();}
+    uint64_t size() {return tuples.size();}
 
     string out(){
         std::stringstream ss;

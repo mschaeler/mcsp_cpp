@@ -35,7 +35,7 @@ public:
         //nothing else todo
     }
 
-    virtual int size() = 0;
+    virtual uint64_t size() = 0;
 
     string out(){
         string str;
