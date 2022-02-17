@@ -17,13 +17,27 @@
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Cutoffs_External.h"
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Ranges_External.h"
 
-void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms){
+void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms, int max_num_columns){
     DatabaseSystem* dbms;
     Table* t;
     int num_queries_per_set = 100;
     int num_query_sets = 20;
-    SelectionTests experiment(scale, num_query_sets, num_queries_per_set);
+    SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns);
     experiment.p_benchmark(all_dbms, false);
+}
+
+void run_p_1_benchmark(vector<DatabaseSystem*> all_dbms, int max_num_columns){
+    DatabaseSystem* dbms;
+    Table* t;
+    int num_queries_per_set = 100;
+    int num_query_sets = 20;
+    double p = 1.0;
+    vector<double> scales = {1.0,5.0,10.0,20.0};
+    for(double scale : scales) {
+        cout << "***scale=" << scale << endl;
+        SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns, p);
+        experiment.p_benchmark(all_dbms, false);
+    }
 }
 
 int64_t read_cost  = 0;
@@ -53,6 +67,7 @@ void test_something(double scale){
 
 int main(int argc, char* argv[]) {
     double scale = 1.0;
+    int max_num_columns = 4;
 
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
@@ -101,7 +116,8 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
     vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, false);
-    run_p_benchmark(scale, all_dbms);
+    //run_p_benchmark(scale, all_dbms,max_num_columns);
+    run_p_1_benchmark(all_dbms,max_num_columns);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;

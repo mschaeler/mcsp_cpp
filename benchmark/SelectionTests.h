@@ -90,7 +90,7 @@ class SelectionTests {
         double start, stop;
         do {
             cout << dbms->name() << endl;
-            for(int i=0;i<p_values.size();i++) {
+            for(int i=0;i<all_queries.size();i++) {
                 cout << "Starting benchmark for p=" << to_string(p_values[i]) << "\t";
                 uint64_t check_sum = 0;
                 if(LOG_COST){reset_cost();}
@@ -269,7 +269,7 @@ public:
     /**
      * Common MCSP constructor
      */
-    SelectionTests(double _scale, int _num_query_sets, int _num_queries)
+    SelectionTests(double _scale, int _num_query_sets, int _num_queries, int max_num_columns)
     : scale(_scale)
     , num_query_sets(_num_query_sets)
     , num_queries(_num_queries)
@@ -280,7 +280,6 @@ public:
             double p = p_values[i];
             vector<SelectionQuerySet> current;// = all_queries.at(i);
             //SelectionQuerySet.PROB_INCREASE_PER_COLUMN = p;
-            int max_num_columns = 4;
             cout << "Creating queries for p="+ to_string(p) << " max_num_columns=" << max_num_columns << endl;
             for(int set=0;set<num_query_sets;set++) {
                 SelectionQuerySet temp (default_selectivities, p, scale, num_queries, max_num_columns, rand);
@@ -288,6 +287,30 @@ public:
             }
             all_queries.push_back(current);
         }
+        cout << "Created" << all_queries.size() << " p values" << endl;
+        for(vector<SelectionQuerySet> set : all_queries) {
+            cout << "Printing statistics for " << set.size() << " query sets" << endl;
+            SelectionQuerySet::statisticsQuerySet(set);
+        }
+    }
+
+    SelectionTests(double _scale, int _num_query_sets, int _num_queries, int max_num_columns, double p)
+            : scale(_scale)
+            , num_query_sets(_num_query_sets)
+            , num_queries(_num_queries)
+    //, all_queries(p_values.size(), vector<SelectionQuerySet*>(num_query_sets))
+    {
+        rand.seed(123);
+
+        vector<SelectionQuerySet> current;// = all_queries.at(i);
+        //SelectionQuerySet.PROB_INCREASE_PER_COLUMN = p;
+        cout << "Creating queries for p="+ to_string(p) << " max_num_columns=" << max_num_columns << endl;
+        for(int set=0;set<num_query_sets;set++) {
+            SelectionQuerySet temp (default_selectivities, p, scale, num_queries, max_num_columns, rand);
+            current.push_back(temp);
+        }
+        all_queries.push_back(current);
+
         cout << "Created" << all_queries.size() << " p values" << endl;
         for(vector<SelectionQuerySet> set : all_queries) {
             cout << "Printing statistics for " << set.size() << " query sets" << endl;
@@ -397,7 +420,7 @@ public:
     static void check_mcsp_queries(double scale, DatabaseSystem* to_test){
         int num_query_sets = 10;
         int num_queries = 10;
-        SelectionTests tester(scale, num_query_sets, num_queries);
+        SelectionTests tester(scale, num_query_sets, num_queries,3);
         tester.check_mcsp(to_test);
     }
 
