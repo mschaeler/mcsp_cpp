@@ -32,7 +32,7 @@ void run_p_1_benchmark(vector<DatabaseSystem*> all_dbms, int max_num_columns){
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     double p = 1.0;
-    vector<double> scales = {1.0,5.0,10.0,20.0};
+    vector<double> scales = {10,20,30,40,50};
     for(double scale : scales) {
         cout << "***scale=" << scale << endl;
         SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns, p);
