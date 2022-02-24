@@ -234,5 +234,4 @@ private:
     }
 };
 
-
 #endif //MY_MCSP_COLTABLE_H

@@ -357,7 +357,7 @@ public:
                 }
                 cout << header << endl;
 
-                for(int column=0; column<max_column;column++) {
+                for(int column=0; column<max_column;column++) {//XXX < max_column
                     //only use if DISPLAY_COST == true
                     vector<uint64_t> read_cost_vec(default_selectivities.size());
                     vector<uint64_t> write_cost_vec(default_selectivities.size());
@@ -378,6 +378,7 @@ public:
                             auto& selectivities = query.getSelectivities();
                             auto& synopsis = dbs->select(t, columns, predicates,selectivities);
                             check_sum += synopsis.size();
+                            //cout << "check_sum=" << check_sum << endl;
                         }
                         auto stop = chrono::system_clock::now();
                         cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() << "\t" << flush;
