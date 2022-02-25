@@ -33,7 +33,7 @@ void run_p_1_benchmark(vector<DatabaseSystem*> all_dbms, int max_num_columns){
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     double p = 1.0;
-    vector<double> scales = {1,10,20,30,40,50};
+    vector<double> scales = {0.1,1,10,20,30,40,50};
     for(double scale : scales) {
         cout << "***scale=" << scale << endl;
         SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns, p);
@@ -103,14 +103,14 @@ int main(int argc, char* argv[]) {
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
 
-    //SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl_Ranges_External());
+    //SelectionTests::check_mcsp_queries(scale, new SortedProjectionDBMS());
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed(),new MyRowiseHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
-    vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper};
+    vector<DatabaseSystem*> all_dbms = {new SortedProjectionDBMS(), new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges_External()};

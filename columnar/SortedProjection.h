@@ -139,7 +139,103 @@ public:
         return mcsp_select(table,_column_indexes,_predicates,_selectivities);
     }
 
+    void materialize(const int from, const int to, Synopsis& result_tids, const vector<int>& org_tids) {
+        //result_tids.add(org_tids.begin()+from,org_tids.begin()+to);
+        //if(LOG_COST){write_cost++;}
+        for (int i = from; i < to; i++) {
+            int tid = org_tids.at(i);
+            result_tids.add(tid);
+            if(LOG_COST){write_cost++;}
+        }
+    }
+
+    void
+    select_mcsp(Projection& p, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities,
+                const long long int run_start, const long long int run_stop, const int column_index
+                , Synopsis& result_tids
+    ) {
+        const int column_num = column_indexes.at(column_index);
+        const vector<int>& raw_column = p.projected_columns.at(column_num);
+        const int lower = predicates.at(column_index).at(LOWER);
+        const int upper = predicates.at(column_index).at(UPPER);
+
+        const int last_selected_level 	  = column_indexes.at(column_indexes.size()-1);
+        const bool is_final_column = column_num == last_selected_level;
+        int offset_where_run_starts = -1;
+
+        int offset = run_start;
+        while(offset<run_stop){
+            //(1) find start of result run in this column
+            while(offset<run_stop) {
+                const int value = raw_column[offset];
+                if(Util::isIn(value, lower, upper)) {
+                    offset_where_run_starts = offset;
+                    offset++;
+                    break;
+                }
+                offset++;
+            }
+
+            //(2) find stop of result run in this column
+            while(offset<run_stop) {
+                const int value = raw_column[offset];
+                if(!Util::isIn(value, lower, upper)) {//found end of run in this column
+                    if(is_final_column) {
+                        materialize(offset_where_run_starts, offset, result_tids, p.org_tids);
+                    }else {
+                        select_mcsp(p, column_indexes, predicates, selectivities, offset_where_run_starts, offset, column_index+1, result_tids);
+                    }
+                    offset++;
+                    offset_where_run_starts = -1;
+                    break;
+                }
+                offset++;
+            }
+        }
+
+        //last run: We do not see its end.
+        if(offset_where_run_starts!=-1) {
+            if(is_final_column) {
+                materialize(offset_where_run_starts, offset, result_tids, p.org_tids);
+            }else {
+                select_mcsp(p, column_indexes, predicates, selectivities, offset_where_run_starts, offset, column_index+1, result_tids);
+            }
+        }
+
+        if(LOG_COST) {
+            read_cost+=(run_stop-run_start);
+        }
+    }
+
     Synopsis& mcsp_select(Sorted_Projection_Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
+        intermediate_result.clear();
+
+        //inlined select_1() method
+        const int col_index = column_indexes.at(0);
+        const int lower = predicates.at(0).at(LOWER);
+        const int upper = predicates.at(0).at(UPPER);
+
+        Projection& p = t.projections.at(col_index);
+        //Projection& p = t.first_proj;
+        const vector<int>& sorted_column = p.projected_columns.at(col_index);
+        const vector<int>& tids = p.org_tids;//we need to use the original tids for the result found in here
+
+        const auto low = lower_bound (sorted_column.begin(), sorted_column.end(), lower);
+        const auto up  = upper_bound (sorted_column.begin(), sorted_column.end(), upper);
+        //std::cout << "lower_bound at position " << (low- sorted_column.begin()) << endl;
+        //std::cout << "upper_bound at position " << (up - sorted_column.begin()) << endl;
+
+        //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
+        const auto from = low - sorted_column.begin();
+        const auto to = up - sorted_column.begin();
+
+        if(LOG_COST){
+            read_cost  += 2*log2(t.size());
+        }
+
+        int column_index = 1;
+        select_mcsp(p, column_indexes, predicates, selectivities, from , to, column_index, intermediate_result);
+
         return intermediate_result;
     }
 
