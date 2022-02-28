@@ -73,32 +73,18 @@ public:
 class Sorted_Projection_Table : public ColTable{
 public:
     vector<Projection> projections;
-    //Projection first_proj;
 
-    Sorted_Projection_Table(ColTable& t)
+    explicit Sorted_Projection_Table(ColTable& t)
     : ColTable(t.my_name, t.column_names, t.columns)
-    //, first_proj(0,t)
     {
-        //check projection
-        /*for(int tid=1;tid<t.size();tid++){
-            int before_val = first_proj.projected_columns.at(0).at(tid-1);
-            int val = first_proj.projected_columns.at(0).at(tid);
-            //check column
-            if(val<before_val){
-                cout << "error @tid=" << tid << endl;
-            }
-        }*/
-
         for(int c=0;c<t.num_dim;c++){
-            projections.push_back(Projection(c,t));
-            cout <<"c="<<c<<" vec size="<<projections.size();
+            projections.emplace_back(c,t);//avoid temporary construction and subsequent push back
         }
         cout<<endl;
     }
 };
 
 class SortedProjectionDBMS : public DatabaseSystem{
-    static const bool USE_BUILD_IN_COPY = true;
     Synopsis intermediate_result;
 
 public:
@@ -107,8 +93,10 @@ public:
 
     }
 
-    Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
-        Sorted_Projection_Table& table = dynamic_cast<Sorted_Projection_Table &>(t);
+    Synopsis& select(Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities) override {
+        auto& table = dynamic_cast<Sorted_Projection_Table &>(t);
+        intermediate_result.clear();
+        intermediate_result.ensure_capacity(table.size());
 
         int size = column_indexes.size();
         if(size == 1){//nothing to sort
@@ -139,21 +127,16 @@ public:
         return mcsp_select(table,_column_indexes,_predicates,_selectivities);
     }
 
-    void materialize(const int from, const int to, Synopsis& result_tids, const vector<int>& org_tids) {
-        //result_tids.add(org_tids.begin()+from,org_tids.begin()+to);
-        //if(LOG_COST){write_cost++;}
-        for (int i = from; i < to; i++) {
-            int tid = org_tids.at(i);
-            result_tids.add(tid);
-            if(LOG_COST){write_cost++;}
-        }
+    static void materialize(const int from, const int to, Synopsis& result_tids, const vector<int>& org_tids) {
+        result_tids.add(org_tids.begin()+from,org_tids.begin()+to);
+        if(LOG_COST){write_cost+=to-from;}
     }
 
     void
     select_mcsp(Projection& p, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities,
                 const long long int run_start, const long long int run_stop, const int column_index
                 , Synopsis& result_tids
-    ) {
+    ) const {
         const int column_num = column_indexes.at(column_index);
         const vector<int>& raw_column = p.projected_columns.at(column_num);
         const int lower = predicates.at(column_index).at(LOWER);
@@ -163,11 +146,11 @@ public:
         const bool is_final_column = column_num == last_selected_level;
         int offset_where_run_starts = -1;
 
-        int offset = run_start;
+        auto offset = run_start;
         while(offset<run_stop){
             //(1) find start of result run in this column
             while(offset<run_stop) {
-                const int value = raw_column[offset];
+                const int value = raw_column.at(offset);
                 if(Util::isIn(value, lower, upper)) {
                     offset_where_run_starts = offset;
                     offset++;
@@ -208,7 +191,6 @@ public:
     }
 
     Synopsis& mcsp_select(Sorted_Projection_Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
-        intermediate_result.clear();
 
         //inlined select_1() method
         const int col_index = column_indexes.at(0);
@@ -240,8 +222,7 @@ public:
     }
 
     Synopsis& mono_column_select(Sorted_Projection_Table& t, const int col_index, const int lower, const int upper){
-        intermediate_result.clear();
-        Projection& p = t.projections.at(col_index);
+        const Projection& p = t.projections.at(col_index);
         //Projection& p = t.first_proj;
         const vector<int>& sorted_column = p.projected_columns.at(col_index);
         const vector<int>& tids = p.org_tids;//we need to use the original tids for the result found in here
@@ -254,15 +235,7 @@ public:
         //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
         const auto from = low - sorted_column.begin();
         const auto to = up - sorted_column.begin();
-        if(USE_BUILD_IN_COPY){
-            intermediate_result.copy(tids.begin()+from, tids.begin()+to);
-        }else{
-            for(int pos=0;pos<from;pos++){
-                intermediate_result.add(tids.at(pos));
-            }
-        }
-
-        //copy(low,up,intermediate_result.array.begin());
+        intermediate_result.copy(tids.begin()+from, tids.begin()+to);
 
         if(LOG_COST){
             read_cost  += 2*log2(t.size());
@@ -271,7 +244,7 @@ public:
         return intermediate_result;
     }
 
-    Table* get_TPC_H_lineitem(double scale){
+    Table* get_TPC_H_lineitem(double scale) override{
         Table* t;
 
         ColTable col_t(scale); // create only locally, s.t. it gets destroyed after leaving the method

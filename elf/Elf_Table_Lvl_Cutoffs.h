@@ -631,7 +631,7 @@ private:
     * Returns the first level having mono list. The pointer to this mono list in the level above. The main reason for this function is to avoid the non-density bug.
     * @return
      */
-    static int get_first_level_with_monolists(const vector<int>& mono_list_level) {
+    static int get_first_level_with_monolists(const vector<elf_pointer>& mono_list_level) {
         for(int level=1;level<mono_list_level.size();level++) {
             if(mono_list_level.at(level)>0) {
                 return level;

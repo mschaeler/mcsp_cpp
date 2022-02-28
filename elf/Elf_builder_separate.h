@@ -13,7 +13,7 @@
 
 class BecomesMonoList{
 public:
-    BecomesMonoList(int _tid, int _start_dim, int _elf_sub_tree) :
+    BecomesMonoList(int _tid, int _start_dim, elf_pointer _elf_sub_tree) :
         tid(_tid), start_dim(_start_dim), elf_sub_tree(_elf_sub_tree)
     {}
 
@@ -24,12 +24,12 @@ public:
 
 class SubTree{
 public:
-    SubTree(int _start_pointer, vector<int32_t>& _contained_points) :
+    SubTree(elf_pointer _start_pointer, vector<int32_t>& _contained_points) :
             start_pointer(_start_pointer), contained_points(_contained_points)
     {}
 
     /** This pointer has be set upon writing the next level*/
-    int start_pointer;
+    elf_pointer start_pointer;
     vector<int32_t> contained_points;
 };
 
@@ -43,7 +43,7 @@ class Elf_builder_separate {
     /** for writing external cutoffs**/
     vector<int32_t> cutoffs;
 
-    int32_t write_pointer = 0;
+    elf_pointer write_pointer = 0;
 
     vector<int32_t> values;
     vector<elf_pointer> pointer;
@@ -186,12 +186,12 @@ class Elf_builder_separate {
         return (pointer<0) ? true : false;//msb is set, i.e., pointer is negative
     }
 
-    int get_node_size(int start_node) {
+    int get_node_size(elf_pointer start_node) {
         int length = values.at(start_node);
         return length & Elf::RECOVER_MASK;//un mask
     }
 
-    int get_tid_from_monolist(int start_list, int start_level) {
+    int get_tid_from_monolist(elf_pointer start_list, int start_level) {
         return mono_list_array.at(start_list+table.num_dim-start_level);
     }
 
@@ -242,7 +242,7 @@ class Elf_builder_separate {
         for(int elem=0;elem<length;elem++) {
             const elf_pointer elem_offset = start_list + Elf_table_lvl_seperate::NODE_HEAD_LENGTH + elem;//+1 for length
             write_cuttoff_external(elem_offset);
-            int start_list_next_dim = pointer.at(elem_offset);
+            elf_pointer start_list_next_dim = pointer.at(elem_offset);
             if (points_to_monolist(start_list_next_dim)) {
                 //no cutoff to write
                 start_list_next_dim &= Elf::RECOVER_MASK;
@@ -259,11 +259,11 @@ class Elf_builder_separate {
             //find tids in preorder traversal
     void determine_and_write_cutoffs() {
         cout << "determine_and_write_cutoffs()" << endl;
-        int start = 0;//by definition
-        int stop  = levels.at(0);
+        elf_pointer start = 0;//by definition
+        elf_pointer stop  = levels.at(0);
 
-        for(int e=start;e<stop;e++) {//for each entry in the root
-            int start_list_next_dim = pointer.at(e);
+        for(elf_pointer e=start;e<stop;e++) {//for each entry in the root
+            elf_pointer start_list_next_dim = pointer.at(e);
 
             if(start_list_next_dim!=Elf::EMPTY_ROOT_NODE){//non-dense data in first dimension
                 if(!points_to_monolist(start_list_next_dim)) {
@@ -276,9 +276,9 @@ class Elf_builder_separate {
         }
     }
 
-    void write_cuttoff(const int start_list, const int current_tid_offset) {
+    void write_cuttoff(const elf_pointer start_list, const int current_tid_offset) {
         if(Elf::SAVE_MODE) {
-            int temp_cuttoff = pointer.at(start_list);
+            elf_pointer temp_cuttoff = pointer.at(start_list);
             if(temp_cuttoff!=0 && temp_cuttoff!=current_tid_offset) {//may be loaded cutt ofss from file
                 cout << "write_cuttoff(" << start_list << "," << current_tid_offset << ") write to non empty position and existing cutoff incorrect" << endl;
             }
@@ -293,7 +293,7 @@ class Elf_builder_separate {
      * @param start_list
      * @return - the total number of tids, we have already seen.
      */
-    void determine_and_write_cutoffs(const int start_list, const int level){
+    void determine_and_write_cutoffs(const elf_pointer start_list, const int level){
         const int length = get_node_size(start_list);
 
         /*if(Elf::SAVE_MODE) {
@@ -302,9 +302,9 @@ class Elf_builder_separate {
             }
         }*/
 
-        for(int elem=0;elem<length;elem++){
-            const int elem_offset = start_list+Elf_Table_Lvl_Cutoffs::NODE_HEAD_LENGTH+elem;//+1 for length
-            int start_list_next_dim = pointer.at(elem_offset);
+        for(elf_pointer elem=0;elem<length;elem++){
+            const elf_pointer elem_offset = start_list+Elf_Table_Lvl_Cutoffs::NODE_HEAD_LENGTH+elem;//+1 for length
+            elf_pointer start_list_next_dim = pointer.at(elem_offset);
             if(points_to_monolist(start_list_next_dim)) {
                 //no cutoff to write
                 start_list_next_dim &= Elf::RECOVER_MASK;
@@ -449,7 +449,7 @@ class Elf_builder_separate {
                  * one level deeper, because we do not know them yet.
                  *******************************************/
                 //Assign each point to its value in this dim. Sort the values.
-                vector<vector<int32_t>> my_dim_elements = distribute(raw_column, last_level[node], dim_max, my_dim);
+                vector<vector<int32_t>> my_dim_elements = distribute(raw_column, last_level.at(node), dim_max, my_dim);
                 // my_dim_elements[value] -> gives all tids having this value in this level
                 for (int i = 0; i < my_dim_elements.size(); i++) {//so many may exist, there may be empty elements, we do not materialize
                     vector<int32_t> &contained_points = my_dim_elements.at(i);
