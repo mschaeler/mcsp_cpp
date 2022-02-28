@@ -15,7 +15,11 @@ class BecomesMonoList{
 public:
     BecomesMonoList(int _tid, int _start_dim, elf_pointer _elf_sub_tree) :
         tid(_tid), start_dim(_start_dim), elf_sub_tree(_elf_sub_tree)
-    {}
+    {
+        if(Elf::SAVE_MODE){
+            if(elf_sub_tree<0) cout << "BecomesMonoList() elf_sub_tree<0 for tid=" << tid << " start_dim=" << _start_dim << " pointer=" << _elf_sub_tree << endl;
+        }
+    }
 
     int start_dim;
     elf_pointer elf_sub_tree;
@@ -134,7 +138,7 @@ class Elf_builder_separate {
         /************************************
 		 * (3.1) Really write the Mono Lists - Note they are still in an intermediate format
 		 ************************************/
-        for(BecomesMonoList mono : this->mono_lists){
+        for(BecomesMonoList& mono : this->mono_lists){
             if(mono.start_dim!=current_level){
                 if(mono.start_dim<current_level){
                     cout << "Boah, they should be sorted"<<endl;
