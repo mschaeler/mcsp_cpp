@@ -100,7 +100,7 @@ public:
 
         int size = column_indexes.size();
         if(size == 1){//nothing to sort
-            return mono_column_select(table,column_indexes.at(0), predicates.at(0).at(LOWER),predicates.at(0).at(UPPER));
+            return select_1(table, column_indexes.at(0), predicates.at(0).at(LOWER), predicates.at(0).at(UPPER));
         }
         vector<Selecticity> to_sort;
         for(int i=0;i<size;i++){
@@ -124,7 +124,7 @@ public:
 
         //cout << Util::to_string(column_indexes) << " sel=" << Util::to_string(selectivities) << " after: ";
         //cout << Util::to_string(_column_indexes) << " sel=" << Util::to_string(_selectivities) << endl;
-        return mcsp_select(table,_column_indexes,_predicates,_selectivities);
+        return select_mcsp(table, _column_indexes, _predicates, _selectivities);
     }
 
     static void materialize(const int from, const int to, Synopsis& result_tids, const vector<int>& org_tids) {
@@ -190,7 +190,7 @@ public:
         }
     }
 
-    Synopsis& mcsp_select(Sorted_Projection_Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
+    Synopsis& select_mcsp(Sorted_Projection_Table& t, vector<int>& column_indexes, vector<vector<int>>& predicates, vector<double>& selectivities){
 
         //inlined select_1() method
         const int col_index = column_indexes.at(0);
@@ -221,7 +221,7 @@ public:
         return intermediate_result;
     }
 
-    Synopsis& mono_column_select(Sorted_Projection_Table& t, const int col_index, const int lower, const int upper){
+    Synopsis& select_1(Sorted_Projection_Table& t, const int col_index, const int lower, const int upper){
         const Projection& p = t.projections.at(col_index);
         //Projection& p = t.first_proj;
         const vector<int>& sorted_column = p.projected_columns.at(col_index);
@@ -253,7 +253,7 @@ public:
         return t;
     }
 
-    string name(){
+    string name() override{
         return "Sorted Projection DBMS";
     }
 };
