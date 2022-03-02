@@ -444,7 +444,7 @@ class Elf_builder_separate {
                  *******************************************/
                 // store length of dim list
                 int32_t length = 0;//the point is we do not know the real length yet, but only an upper bound
-                int32_t length_pointer = write_pointer;
+                elf_pointer length_pointer = write_pointer;
                 write_pointer++;
 
                 /*******************************************
@@ -473,7 +473,7 @@ class Elf_builder_separate {
                     }//else ignore this one
                 }
                 //now we know the real length
-                values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;
+                values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;//XXX boah.................
                 last_level.at(node).clear();
             } else {
                 values.at(node) = Elf::EMPTY_ROOT_NODE;
@@ -488,6 +488,7 @@ class Elf_builder_separate {
         vector<int> column = table.columns.at(my_dim);
         int dim_max = this->max_values.at(my_dim) + 1;//including largest value
         vector<SubTree> level;
+        cout << "Next level starts@" << write_pointer << endl;
         this->levels.at(my_dim-1) = write_pointer;//The one before ends here
 
         //for each node s (sub tree) in this level

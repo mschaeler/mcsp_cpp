@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     auto elf_dbms = new Elf_Dbms_Lvl();
     elf_dbms->get_TPC_H_lineitem(scale);
 
-    //SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl());
+    SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl());
 
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new Elf_Dbms_Lvl_Cutoffs_External(), new Elf_Dbms_Lvl_Ranges(), new Elf_Dbms_Lvl_Ranges_External(), new MyHyper(), new MyMonetDB(), new MyMonetDB_Indexed(),new MyRowiseHyper()};
