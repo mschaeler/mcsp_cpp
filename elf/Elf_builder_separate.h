@@ -192,7 +192,7 @@ class Elf_builder_separate {
 
     int get_node_size(elf_pointer start_node) {
         int length = values.at(start_node);
-        return length & Elf::RECOVER_MASK;//un mask
+        return length & Elf::RECOVER_NODE_LENGTH_MASK;//un mask
     }
 
     int get_tid_from_monolist(elf_pointer start_list, int start_level) {
@@ -473,7 +473,7 @@ class Elf_builder_separate {
                     }//else ignore this one
                 }
                 //now we know the real length
-                values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;//XXX boah.................
+                values.at(length_pointer) = length | Elf::NODE_LENGTH_MASK;
                 last_level.at(node).clear();
             } else {
                 values.at(node) = Elf::EMPTY_ROOT_NODE;
@@ -520,7 +520,7 @@ class Elf_builder_separate {
                 }//else ignore this one
             }
             //now we the real length
-            values.at(length_pointer) = length | Elf::LAST_ENTRY_MASK;
+            values.at(length_pointer) = length | Elf::NODE_LENGTH_MASK;
         }
         cout << "dim=" << my_dim << " non unique sub trees " << level.size() << endl;
         return level;

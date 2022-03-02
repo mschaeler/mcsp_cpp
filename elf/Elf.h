@@ -10,7 +10,7 @@
 #include "../general/Table.h"
 
 //#include "../general/Util.h"
-#define USE_64_BIT_POINTER
+//#define USE_64_BIT_POINTER
 
 #ifdef USE_64_BIT_POINTER
 typedef int64_t elf_pointer;
@@ -30,9 +30,11 @@ public:
     static const elf_pointer 	LAST_ENTRY_MASK	 = LLONG_MIN;//LLONG_MIN
     static const elf_pointer 	RECOVER_MASK	 = LLONG_MAX;//LLONG_MAX
 #else
-    static const elf_pointer 	LAST_ENTRY_MASK	 = INT_MIN;//0b10000000000000000000000000000000
-    static const elf_pointer 	RECOVER_MASK	 = INT_MAX;//0b01111111111111111111111111111111
+    static const int32_t 	LAST_ENTRY_MASK	 = INT_MIN;//0b10000000000000000000000000000000
+    static const int32_t 	RECOVER_MASK	 = INT_MAX;//0b01111111111111111111111111111111
 #endif
+    static const elf_pointer 	NODE_LENGTH_MASK            = INT_MIN;//0b10000000000000000000000000000000
+    static const elf_pointer 	RECOVER_NODE_LENGTH_MASK	= INT_MAX;//0b01111111111111111111111111111111
     static const elf_pointer 	EMPTY_ROOT_NODE  = INT_MIN;
     static const int32_t 	DIM_ELEMENT_SIZE = 2;
     static const int32_t 	FIRST_DIM = 0;

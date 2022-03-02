@@ -66,7 +66,7 @@ protected:
                 cout <<"intGetNodeLength() no length at this offset"<<endl;
             }
         }
-        return length & RECOVER_MASK;//un mask
+        return length & RECOVER_NODE_LENGTH_MASK;//un mask
     }
 
     inline bool is_node_length_offset(const elf_pointer offset) const {
