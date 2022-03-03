@@ -436,7 +436,7 @@ public:
         //TPC_H.out_cost = false;
 
         double start, stop;
-        bool use_benchmark = true;
+        bool use_benchmark = false;
 
         cout << to_test->name() << endl;
         if(use_benchmark) {
@@ -463,8 +463,8 @@ public:
                 }
             }
         } else {
-            vector<int> columns = {5, 6, 7};
-            vector<vector<int>> predicates = {{1, 3} , {6, 6} , {4, 4}};
+            vector<int> columns = {1, 3, 12};
+            vector<vector<int>> predicates = {{1, 1} , {4, 4} , {4916174, 4963049}};
             vector<double> selectivities = {1, 1, 1};
             cout << Util::to_string(columns) << " " << Util::to_string(predicates) << endl;
             Synopsis &synopsis = to_test->select(t, columns, predicates, selectivities);
