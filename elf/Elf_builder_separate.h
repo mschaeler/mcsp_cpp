@@ -144,7 +144,9 @@ class Elf_builder_separate {
                 if(mono.start_dim<current_level){
                     cout << "Boah, they should be sorted"<<endl;
                 }else{
-                    this->levels_mono_lists.at(current_level) = mono_list_array.size();
+                    elf_pointer temp = mono_list_array.size();
+                    cout << temp;
+                    this->levels_mono_lists.at(current_level) = temp;
                     current_level = mono.start_dim;//may be multiple levels deeper
                 }
             }
@@ -485,7 +487,7 @@ class Elf_builder_separate {
                 pointer.at(node) = Elf::EMPTY_ROOT_NODE;
             }
         }
-        cout << "l=" << my_dim << " non unique=" << level.size() << ", ";
+        cout << "l=" << my_dim << " non unique=" << level.size() << ", "; cout.flush();
         return level;
     }
 
@@ -527,7 +529,7 @@ class Elf_builder_separate {
             //now we the real length
             values.at(length_pointer) = length | Elf::NODE_LENGTH_MASK;
         }
-        cout << "l=" << my_dim << " non unique=" << level.size() << ", ";
+        cout << "l=" << my_dim << " non unique=" << level.size() << ", "; cout.flush();
         return level;
     }
 
