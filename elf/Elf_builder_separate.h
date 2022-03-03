@@ -150,6 +150,7 @@ class Elf_builder_separate {
             writeMonoList(mono);
         }
         cout << "Done writing mono lists" << endl;
+        //cout << "pointer @56287=" << pointer.at(56287) << endl;
         /************************************
 		 * (4) Copy all create data items, i.e. levels and MonoList into trimmed arrays for the actual Elf
 		 ************************************/
@@ -166,7 +167,7 @@ class Elf_builder_separate {
         cout << levels.at(0) << endl;
         //cout << Util::to_string(levels_mono_lists) << endl;
         auto end = chrono::system_clock::now();
-
+        //cout << "pointer @56287=" << pointer.at(56287) << endl;
         cout << "Elf_separate.build() " <<table.size()<< " in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count()<<"  ms" << endl;
     }
     Elf_table_lvl_seperate* create_elf_instance(){
@@ -378,6 +379,9 @@ class Elf_builder_separate {
 
     void writeMonoList(BecomesMonoList& mono) {
         //write missing pointer to mono list
+        /*if(mono_list_array.size() == 243628){
+            cout << "writeMonoList()"<<endl;
+        }*/
         elf_pointer write_to_location = mono_list_array.size() | Elf::LAST_ENTRY_MASK;
         pointer.at(mono.elf_sub_tree) =  write_to_location;
 

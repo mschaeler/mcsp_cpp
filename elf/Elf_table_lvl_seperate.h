@@ -16,6 +16,7 @@ protected:
     const int32_t num_dim;
 
     int exists_mono(const elf_pointer start_list, const vector<int>& query, const int start_dim) const {
+        //cout << "exists_mono() @"<< start_list << " l="<<start_dim << endl;
         for(int dim=start_dim;dim<num_dim;dim++){
             int val = get_attribute_monolist(start_list,start_dim,dim);// mono_lists[start_list+dim-start_dim];
             if(query.at(dim)!=val){
@@ -36,6 +37,11 @@ protected:
     }
 
     int exists(const elf_pointer START_LIST, const vector<int>& query, const int dimension) const {
+        /*cout << "exists() @"<< START_LIST << " l="<<dimension << endl;
+        if(START_LIST == 56280){
+            cout << "error case" << endl;
+            cout << "pointer @56287=" << pointer.at(56287) << "vs." << get_pointer(56287) << endl;
+        }*/
         int toCompare;
         int length = get_node_length(START_LIST);
         int q_val = query.at(dimension);
@@ -131,7 +137,7 @@ protected:
         if(LOG_COST) {read_cost++;}
         return values.at(elem_offset);
     }
-    inline int get_pointer(elf_pointer elem_offset) const {
+    inline elf_pointer get_pointer(elf_pointer elem_offset) const {
         if(LOG_COST) {read_cost++;}
         return pointer.at(elem_offset);
     }
