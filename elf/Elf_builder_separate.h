@@ -145,7 +145,7 @@ class Elf_builder_separate {
                     cout << "Boah, they should be sorted"<<endl;
                 }else{
                     elf_pointer temp = mono_list_array.size();
-                    cout << temp;
+                    cout << "l="<< current_level <<" @"<< temp << endl;
                     this->levels_mono_lists.at(current_level) = temp;
                     current_level = mono.start_dim;//may be multiple levels deeper
                 }
