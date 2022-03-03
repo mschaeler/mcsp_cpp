@@ -339,7 +339,7 @@ public:
     static string to_string(vector<int64_t> vec){
         string str;
         str.append("(");
-        for(int s : vec){
+        for(auto s : vec){
             str.append(std::__cxx11::to_string(s)+", ");
         }
         str.replace(str.length()-2,1,")");
