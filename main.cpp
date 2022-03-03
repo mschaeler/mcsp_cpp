@@ -67,7 +67,7 @@ void test_something(double scale){
 }
 
 int main(int argc, char* argv[]) {
-    double scale =60;
+    double scale =0.1;
     int max_num_columns = 4;
 
     vector<int> dummy;

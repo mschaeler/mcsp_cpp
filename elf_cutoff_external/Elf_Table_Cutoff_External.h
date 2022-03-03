@@ -297,12 +297,12 @@ private:
         }
         //These are the pointers we want to find below
         /** the first node in the next level in this range. It may not exist. */
-        int new_start_range = INT_MAX;
+        elf_pointer new_start_range = RECOVER_MASK;//MIN
         /** the first node in the next level not beeing in the range. It exists iff new_start_range exists*/
-        int new_stop_range  = INT_MIN;
+        elf_pointer new_stop_range  = LAST_ENTRY_MASK;//MAX
         /** the first node in the next level not beeing in the range*/
-        int first_mono_list = INT_MAX;
-        int last_mono_list  = INT_MIN;
+        elf_pointer first_mono_list = RECOVER_MASK;//MIN
+        elf_pointer last_mono_list  = LAST_ENTRY_MASK;//MAX
 
         /*****************************************************************************************************
          * (1.1) find start of range in this dim. This is the first dim list pointer after
@@ -355,8 +355,8 @@ private:
                 last_mono_list = cutoff_monolist(stop_range);
 
                 if(first_mono_list==last_mono_list) {//The next monolist is behind stop_range
-                    first_mono_list = INT_MAX;
-                    last_mono_list  = INT_MIN;
+                    first_mono_list = RECOVER_MASK;
+                    last_mono_list  = LAST_ENTRY_MASK;
                 }else{
                     //Now it gets a little bit complicated: Without using extended cutoff last_mono_list points to the last mono list to *include*
                     //By design, with extended cutoffs we point to the first to exclude, i.e., subtract one mono list length. That is length_monolist(level+1), as the mono lists start in the level below
@@ -384,7 +384,7 @@ private:
 		 * in the next level.
 		 ******************************************************************************************************/
         scan_mono_lists_in_level(first_mono_list, last_mono_list, level+1, columns, predicates, predicate_index, tids);
-        if(new_start_range!=INT_MAX) {
+        if(new_start_range!=LAST_ENTRY_MASK) {
             select_mcsp_ranges(new_start_range, new_stop_range, level+1, tids, columns, predicates, predicate_index);
         }
     }
@@ -409,7 +409,7 @@ private:
             }
             elem_offset++;//next elem
         }
-        return INT_MAX;//No dim element in this range
+        return RECOVER_MASK;//MAX_INT->No dim element in this range
     }
 
     elf_pointer get_last_mono_list(const elf_pointer offset, const elf_pointer start_range) const {
@@ -423,7 +423,7 @@ private:
             }
             elem_offset--;//next elem
         }
-        return INT_MIN;//No dim element in this range
+        return LAST_ENTRY_MASK;//INT_MIN -> No dim element in this range
     }
 
     /**
@@ -463,7 +463,6 @@ private:
 
         //stuff for the iteration
         elf_pointer elem_offset = start_range;
-        elf_pointer elem_where_run_start=-1;
         elf_pointer elem_pointer_where_run_start=-1;
         /** Flag indicating that there is an un-materialized result run.*/
         bool materialized = false;
@@ -488,7 +487,6 @@ private:
                             select_monolist_add_tid(elem_pointer, level+1, columns, predicates, predicate_index+1, tids);
                         }else{
                             elem_pointer_where_run_start = elem_pointer;
-                            elem_where_run_start = elem_offset;
                             materialized = false;
                             elem_offset++;//next elem
                             break;//Go to second inner while to find the end of the run. I know it is break...
@@ -554,7 +552,7 @@ private:
             }
             elem_offset++;//next elem
         }
-        return INT_MAX;//No dim element in this range
+        return LAST_ENTRY_MASK;//INT_MAX->No dim element in this range
     }
 
     elf_pointer get_new_stop_range(const elf_pointer offset, const elf_pointer start_range) const {//XXX finde ich so scheiße
@@ -568,7 +566,7 @@ private:
             }
             elem_offset--;//next elem
         }
-        return INT_MAX;//No dim element in this range
+        return LAST_ENTRY_MASK;//INT_MAX->No dim element in this range
     }
 
     /**

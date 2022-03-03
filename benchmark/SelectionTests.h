@@ -436,7 +436,7 @@ public:
         //TPC_H.out_cost = false;
 
         double start, stop;
-        bool use_benchmark = false;
+        bool use_benchmark = true;
 
         cout << to_test->name() << endl;
         if(use_benchmark) {
