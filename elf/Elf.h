@@ -42,7 +42,7 @@ public:
     static const int64_t 	HEADER_OFFSET = 2*4;
     static const int64_t 	MAX_POINTER = INT_MAX;
 
-    static const bool SAVE_MODE  = true;
+    static const bool SAVE_MODE  = false;
     static const bool DEBUG_MODE = false;
 
 };
