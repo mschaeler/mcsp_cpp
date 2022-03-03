@@ -208,7 +208,7 @@ protected:
      * @param rest_to_check
      * @return
      */
-    inline bool select_monolist(const int start_list, const int start_level
+    inline bool select_monolist(const elf_pointer start_list, const int start_level
             , const vector<int>& columns, const vector<vector<int>>& predicates, const int rest_to_check
     ) const {
         if(SAVE_MODE) {
@@ -220,7 +220,6 @@ protected:
         for(int p=rest_to_check;p<columns.size();p++) {
             const int value = get_attribute_monolist(start_list, start_level, columns.at(p));
             survives &= Util::isIn(value, predicates.at(p).at(0), predicates.at(p).at(1));
-            //if(LOG_COST){read_cost+=num_dim-start_level;}//XXX we only count the number of attributes accessed. this is done in get_attribute_monolist()
         }
         return survives;
     }
