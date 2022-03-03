@@ -67,7 +67,7 @@ void test_something(double scale){
 }
 
 int main(int argc, char* argv[]) {
-    double scale = 0.01;
+    double scale =60;
     int max_num_columns = 4;
 
     vector<int> dummy;
@@ -102,8 +102,8 @@ int main(int argc, char* argv[]) {
 
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
-    auto elf_dbms = new Elf_Dbms_Lvl();
-    elf_dbms->get_TPC_H_lineitem(scale);
+    //auto elf_dbms = new Elf_Dbms_Lvl();
+    //elf_dbms->get_TPC_H_lineitem(scale);
 
     SelectionTests::check_mcsp_queries(scale, new Elf_Dbms_Lvl());
 
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
     vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(),new MyMonetDB_Indexed()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
     //run_p_benchmark(scale, all_dbms,max_num_columns);
-    run_p_1_benchmark(all_dbms,max_num_columns);
+    //run_p_1_benchmark(all_dbms,max_num_columns);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;
