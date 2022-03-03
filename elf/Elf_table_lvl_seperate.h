@@ -43,7 +43,7 @@ protected:
             cout << "pointer @56287=" << pointer.at(56287) << "vs." << get_pointer(56287) << endl;
         }*/
         int toCompare;
-        int length = get_node_length(START_LIST);
+        int length = get_node_size(START_LIST);
         int q_val = query.at(dimension);
 
         for(int elem=0;elem<length;elem++){
@@ -64,7 +64,7 @@ protected:
         return NOT_FOUND;
     }
 
-    inline int get_node_length(const int node_offset) const {
+    /*inline int get_node_length(const int node_offset) const {
         if(LOG_COST){read_cost++;}
         int length = values.at(node_offset);
         if(SAVE_MODE) {
@@ -73,7 +73,7 @@ protected:
             }
         }
         return length & RECOVER_NODE_LENGTH_MASK;//un mask
-    }
+    }*/
 
     inline bool is_node_length_offset(const elf_pointer offset) const {
         return values.at(offset)<0;
@@ -130,7 +130,7 @@ protected:
         if(LOG_COST){read_cost++;}
 
         const int length = values.at(start_node);
-        return length & RECOVER_MASK;//un mask
+        return length & RECOVER_NODE_LENGTH_MASK;//un mask
     }
 
     inline int get_value(elf_pointer elem_offset) const {
@@ -564,11 +564,11 @@ public:
 
             if(start_level!=stop_level){//there is at least one list
                 for(int list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
-                    if(SAVE_MODE){
+                    /*if(SAVE_MODE){
                         if(list_offset == 9001456 || list_offset == 9001470){
                             cout << "select_mono_lists_until_first_predicate() list_offset=" << list_offset<< endl;
                         }
-                    }
+                    }*/
                     select_monolist_add_tid(list_offset, level, columns, predicates, 0, result_tids);
                 }
             }
@@ -578,8 +578,8 @@ public:
     void select_mcsp_level_preorder(const vector<int>& columns, const vector<vector<int>>& predicates, Synopsis& result_tids) {
         const int level = columns.at(0);
 
-        const int stop_level = level_stop(level);
-        int next_list_start  = level_start(level);
+        const elf_pointer stop_level = level_stop(level);
+        elf_pointer next_list_start  = level_start(level);
 
         //scan entire level, node by node.
         while (next_list_start<stop_level) {

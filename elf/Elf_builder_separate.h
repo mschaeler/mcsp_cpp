@@ -94,7 +94,7 @@ class Elf_builder_separate {
     }
 
     void build(){
-        cout << "Elf_builder_separate.build() " << table.size() << endl;
+        cout << "Elf_builder_separate.build() " << table.size() << " ";
         auto begin = chrono::system_clock::now();
 
         /*****************************************
@@ -111,6 +111,7 @@ class Elf_builder_separate {
             level = buildLevel(level, dim);
             dim++;
         }
+        cout << endl;
 
         /*****************************************
 		 * (3) We reached the level where all paths
@@ -133,7 +134,7 @@ class Elf_builder_separate {
         if(this->mono_lists.size()!=table.size()){
             cout << "size does not match " << mono_lists.size() << endl;
         }else {
-            cout << "Start writing "<<mono_lists.size()<<" mono lists" << endl;
+            cout << "Start writing "<<mono_lists.size()<<" mono lists ";
         }
         /************************************
 		 * (3.1) Really write the Mono Lists - Note they are still in an intermediate format
@@ -149,7 +150,7 @@ class Elf_builder_separate {
             }
             writeMonoList(mono);
         }
-        cout << "Done writing mono lists" << endl;
+        cout << "[DONE]" << endl;
         //cout << "pointer @56287=" << pointer.at(56287) << endl;
         /************************************
 		 * (4) Copy all create data items, i.e. levels and MonoList into trimmed arrays for the actual Elf
@@ -164,7 +165,7 @@ class Elf_builder_separate {
 
         cout << "Almost done level statistics levels=" << Util::to_string(levels) << " mono list levels=" << Util::to_string(levels_mono_lists) <<  endl;
 
-        cout << levels.at(0) << endl;
+        //cout << levels.at(0) << endl;
         //cout << Util::to_string(levels_mono_lists) << endl;
         auto end = chrono::system_clock::now();
         //cout << "pointer @56287=" << pointer.at(56287) << endl;
@@ -484,7 +485,7 @@ class Elf_builder_separate {
                 pointer.at(node) = Elf::EMPTY_ROOT_NODE;
             }
         }
-        cout << "dim=" << my_dim << " non unique sub trees " << level.size() << endl;
+        cout << "l=" << my_dim << " non unique=" << level.size() << ", ";
         return level;
     }
 
@@ -492,7 +493,7 @@ class Elf_builder_separate {
         vector<int> column = table.columns.at(my_dim);
         int dim_max = this->max_values.at(my_dim) + 1;//including largest value
         vector<SubTree> level;
-        cout << "Next level starts@" << write_pointer << endl;
+        //cout << "Next level starts@" << write_pointer << endl;
         this->levels.at(my_dim-1) = write_pointer;//The one before ends here
 
         //for each node s (sub tree) in this level
@@ -526,7 +527,7 @@ class Elf_builder_separate {
             //now we the real length
             values.at(length_pointer) = length | Elf::NODE_LENGTH_MASK;
         }
-        cout << "dim=" << my_dim << " non unique sub trees " << level.size() << endl;
+        cout << "l=" << my_dim << " non unique=" << level.size() << ", ";
         return level;
     }
 

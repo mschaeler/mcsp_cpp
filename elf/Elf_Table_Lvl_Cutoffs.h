@@ -591,7 +591,7 @@ private:
         if(!is_node_length_offset(node_offset)){
             cout << "Error get_first_tid_in_subtre() called for node_start not element@" << node_offset << endl;
         }
-        const int node_length = get_node_length(node_offset);
+        const int node_length = get_node_size(node_offset);
         elf_pointer cutoff = cutoff_start(node_offset);
         int tid_by_cutoff = tids_in_elf_order.at(cutoff);
         int tid_by_traversal = get_first_tid_in_subtree(node_offset, my_level);
