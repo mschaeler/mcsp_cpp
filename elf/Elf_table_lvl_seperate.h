@@ -213,7 +213,7 @@ protected:
     ) const {
         if(SAVE_MODE) {
             if(get_monolist_level(start_list)!=start_level) {
-                cout << "Error: select_monolist() Pointer does not fit designated level: level=" << start_level << " pointer->" << get_monolist_level(start_list) << endl;
+                cout << "Error: select_monolist() Pointer does not fit designated level: level=" << start_level << " pointer="<<start_list<<"->" << get_monolist_level(start_list) << endl;
             }
         }
         bool survives = true;
@@ -562,7 +562,7 @@ public:
             const int list_length 	        = length_monolist(level);
 
             if(start_level!=stop_level){//there is at least one list
-                for(int list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
+                for(elf_pointer list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
                     /*if(SAVE_MODE){
                         if(list_offset == 9001456 || list_offset == 9001470){
                             cout << "select_mono_lists_until_first_predicate() list_offset=" << list_offset<< endl;
