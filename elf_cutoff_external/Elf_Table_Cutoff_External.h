@@ -178,7 +178,7 @@ public:
             const int list_length 	      = length_monolist(level);
 
             if(start_level!=stop_level){//there is at least one list
-                for(int list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
+                for(elf_pointer list_offset = start_level;list_offset<stop_level;list_offset+=list_length){
                     select_monolist_add_tid(list_offset, level, columns, predicates, 0, tids);
                 }
             }
@@ -201,19 +201,19 @@ public:
         ) const {
         if(SAVE_MODE) {
             if(!is_node_length_offset(start_range)) {
-                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)" << endl;
+                cout << "select_mcsp_ranges() !is_node_length_offset(start_range)" << endl;
             }
-            if(!is_node_length_offset(stop_range)) {
-                cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
+            if(stop_range!=pointer.size() && !is_node_length_offset(stop_range)) {
+                cout << "select_mcsp_ranges() !is_node_length_offset(stop_range)"<< endl;
             }
             if(get_level(start_range)!=level) {
-                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(start_range)!=level"<< endl;
+                cout << "select_mcsp_ranges() getLevel(start_range)!=level"<< endl;
             }
             if(get_level(stop_range-1)!=level) {
-                cout << "scan_mcsp_level_preorder_cutoff_ranges() getLevel(stop_range)!=level"<< endl;
+                cout << "select_mcsp_ranges() getLevel(stop_range)!=level"<< endl;
             }
             if(level>columns.at(predicate_index)) {
-                cout << "scan_mcsp_level_preorder_cutoff_ranges() level!=columns[predicate_index]"<< endl;
+                cout << "select_mcsp_ranges() level!=columns[predicate_index]"<< endl;
             }
         }
         const bool has_selection 	   = columns.at(predicate_index)==level;
@@ -291,7 +291,7 @@ private:
             if(!is_node_length_offset(start_range)){
                 cout << "descent() start_range is no node head"<< endl;
             }
-            if(!is_node_length_offset(stop_range)){
+            if(stop_range!=pointer.size() &&!is_node_length_offset(stop_range)){
                 cout << "descent() stop_range is no node head"<< endl;
             }
         }
@@ -442,19 +442,19 @@ private:
     ) const {
         if(SAVE_MODE) {
             if(!is_node_length_offset(start_range)) {
-                cout <<"scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)" << endl;
+                cout <<"select_mcsp_ranges_non_terminal_selection() !is_node_length_offset(start_range)" << endl;
             }
-            if(!is_node_length_offset(stop_range)) {
-                cout <<"scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
+            if(stop_range!=pointer.size() && !is_node_length_offset(stop_range)) {
+                cout <<"select_mcsp_ranges_non_terminal_selection() !is_node_length_offset(stop_range)"<< endl;
             }
             if(get_level(start_range)!=level) {
-                cout <<"scan_mcsp_level_preorder_cutoff_ranges() getLevel(start_range)!=level" << endl;
+                cout <<"select_mcsp_ranges_non_terminal_selection() getLevel(start_range)!=level" << endl;
             }
             if(get_level(stop_range-1)!=level) {
-                cout <<"scan_mcsp_level_preorder_cutoff_ranges() getLevel(stop_range)!=level" << endl;
+                cout <<"select_mcsp_ranges_non_terminal_selection() getLevel(stop_range)!=level" << endl;
             }
             if(level!=columns[predicate_index]) {
-                cout <<"scan_mcsp_level_preorder_cutoff_ranges() level!=columns[predicate_index]" << endl;
+                cout <<"select_mcsp_ranges_non_terminal_selection() level!=columns[predicate_index]" << endl;
             }
         }
         //the predicates as literals
@@ -530,7 +530,7 @@ private:
             if(elem_offset == level_stop(level)) {
                 new_stop_range = level_stop(level+1);
             }else {
-                int elem_pointer = get_pointer(stop_range+1);//First *element* in the first node not part of the result
+                elf_pointer elem_pointer = get_pointer(stop_range+1);//First *element* in the first node not part of the result
                 if(!points_to_monolist(elem_pointer)) {
                     new_stop_range = elem_pointer;
                 }else {
@@ -587,7 +587,7 @@ private:
             if(!is_node_length_offset(start_range)) {
                 cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(start_range)"<< endl;
             }
-            if(!is_node_length_offset(stop_range)) {
+            if(stop_range!=pointer.size() && !is_node_length_offset(stop_range)) {
                 cout << "scan_mcsp_level_preorder_cutoff_ranges() !is_node_length_offset(stop_range)"<< endl;
             }
             if(get_level(start_range)!=level) {

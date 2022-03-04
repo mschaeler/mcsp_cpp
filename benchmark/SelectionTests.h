@@ -463,8 +463,8 @@ public:
                 }
             }
         } else {
-            vector<int> columns = {1, 3, 12};
-            vector<vector<int>> predicates = {{1, 1} , {4, 4} , {4916174, 4963049}};
+            vector<int> columns = {11, 12, 14};
+            vector<vector<int>> predicates = {{8442, 8500} , {8213, 8838} , {86466, 386466}};
             vector<double> selectivities = {1, 1, 1};
             cout << Util::to_string(columns) << " " << Util::to_string(predicates) << endl;
             Synopsis &synopsis = to_test->select(t, columns, predicates, selectivities);

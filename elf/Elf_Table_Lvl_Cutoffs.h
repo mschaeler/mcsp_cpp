@@ -614,8 +614,10 @@ private:
     }
 
     int get_first_tid_in_subtree(const elf_pointer node_offset, const int my_level){
-        if(!is_node_length_offset(node_offset)){
-            cout << "Error get_first_tid_in_subtre() called for normal element@" << node_offset << endl;
+        if(SAVE_MODE) {
+            if (!is_node_length_offset(node_offset)) {
+                cout << "Error get_first_tid_in_subtre() called for normal element@" << node_offset << endl;
+            }
         }
         elf_pointer elem_pointer = get_pointer(node_offset+1);//first element in this node
         if(points_to_monolist(elem_pointer)){
