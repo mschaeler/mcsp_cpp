@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
     //run_p_benchmark(scale, all_dbms,max_num_columns);
     run_p_1_benchmark(all_dbms,max_num_columns);
