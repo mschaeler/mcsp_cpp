@@ -406,7 +406,7 @@ public:
     }
 
 
-    void p_benchmark(vector<DatabaseSystem*> all_dbms, bool repeat) {
+    void p_benchmark(vector<DatabaseSystem*>& all_dbms, bool repeat) {
         do {
             for(DatabaseSystem* dbms : all_dbms) {
                 p_benchmark(dbms, scale, num_query_sets, num_queries, false);

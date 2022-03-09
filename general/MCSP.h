@@ -138,7 +138,7 @@ public:
         }else {
             num_columns = 1+rand.nextInt(max_num_columns-1);
         }
-        num_columns = max_num_columns;
+        num_columns = max_num_columns;//XXX - Dirty Hack
         diceColumns(table_dimensionality, num_columns);
         //for each dice column create the predicate
         for(int i=0;i<columns.size();i++) {
