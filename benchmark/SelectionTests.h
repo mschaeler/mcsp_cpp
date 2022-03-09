@@ -82,8 +82,7 @@ class SelectionTests {
         read_cost=0;
     }
 
-    void p_benchmark(DatabaseSystem* dbms, double scale, int num_query_sets, int num_queries, bool repeat) {
-        Table& t=*dbms->get_TPC_H_lineitem(scale);
+    void p_benchmark(DatabaseSystem* dbms, Table& t, double scale, int num_query_sets, int num_queries, bool repeat) {
         //TPC_H.out_operator = false;
         //TPC_H.out_cost = false;
 
@@ -119,6 +118,11 @@ class SelectionTests {
                 cout << endl;
             }
         }while(repeat);
+    }
+
+    void p_benchmark(DatabaseSystem* dbms, double scale, int num_query_sets, int num_queries, bool repeat) {
+        Table& t=*dbms->get_TPC_H_lineitem(scale);
+        p_benchmark(dbms, t, scale, num_query_sets, num_queries, repeat);
         t.~Table();
     }
 
@@ -405,6 +409,11 @@ public:
         }while(repeat);
     }
 
+    void p_benchmark(DatabaseSystem* dbms, Table& t, bool repeat) {
+        do {
+            p_benchmark(dbms, t, scale, num_query_sets, num_queries, false);
+        }while(repeat);
+    }
 
     void p_benchmark(vector<DatabaseSystem*>& all_dbms, bool repeat) {
         do {

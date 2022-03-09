@@ -33,8 +33,8 @@ void run_p_1_benchmark(vector<DatabaseSystem*>& all_dbms, int num_columns){
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     double p = 1.0;
-    vector<double> scales = {80,90,100};
-    //vector<double> scales = {1,5,10,15,20};
+    //vector<double> scales = {80,90,100};
+    vector<double> scales = {1,5,10,15};
     //vector<double> scales = {60};
     for(double scale : scales) {
         cout << "***scale=" << scale << endl;
@@ -43,10 +43,27 @@ void run_p_1_benchmark(vector<DatabaseSystem*>& all_dbms, int num_columns){
     }
 }
 
-void run_p_1_benchmark(vector<DatabaseSystem*>& all_dbms){
-    for(int num_predicates=2; num_predicates < 5; num_predicates++){
-        cout << endl << "**************** #p=" << num_predicates << endl;
-        run_p_1_benchmark(all_dbms, num_predicates);
+void run_p_1_p_benchmark(DatabaseSystem* dbms){
+    int num_queries_per_set = 100;
+    int num_query_sets = 20;
+    double p = 1.0;
+    vector<double> scales = {10,20,30,40,50};
+    //vector<double> scales = {1,5,10,15,20};
+    //vector<double> scales = {60};
+
+    for(double scale : scales) {
+        cout << endl << "**************** scale=" << scale << endl;
+        vector<SelectionTests> experiments;
+        for(int num_predicates=2; num_predicates < 5; num_predicates++){
+            experiments.emplace_back(scale, num_query_sets, num_queries_per_set, num_predicates, p);
+        }
+        Table& t=*dbms->get_TPC_H_lineitem(scale);
+
+        for(SelectionTests experiment : experiments){
+            cout << "**** next #p=" << endl;
+            experiment.p_benchmark(dbms, t, false);
+        }
+        t.~Table();
     }
 }
 
@@ -77,7 +94,7 @@ void test_something(double scale){
 
 int main(int argc, char* argv[]) {
     double scale =0.1;
-    int num_columns = 2;
+    int num_columns = 3;
 
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
@@ -107,7 +124,7 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY=" << SelectionQuerySet::UNIFORM_COLUMN_PROBABILIY <<endl;//just to ensure that it is inclduded
-    cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << "#p=" << num_columns << endl;
+    cout << "Config::LOG_COST=" << Config::LOG_COST << " Elf pointer size= " <<sizeof(elf_pointer) << " #p=" << num_columns << endl;
 
     cout << "scale="<<scale<<endl;
     //test_something(0.1);
@@ -127,11 +144,11 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External()};
+    vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
     //run_p_benchmark(scale, all_dbms,num_columns);
-    run_p_1_benchmark(all_dbms, num_columns);
-    //run_p_1_benchmark(all_dbms);
+    //run_p_1_benchmark(all_dbms, num_columns);
+    run_p_1_p_benchmark(all_dbms.at(0));
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;
