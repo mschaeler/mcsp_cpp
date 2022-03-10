@@ -322,6 +322,32 @@ public:
         }
     }
 
+    SelectionTests(double _scale, int _num_query_sets, int _num_queries, int max_num_columns, double p, double selectivity)
+            : scale(_scale)
+            , num_query_sets(_num_query_sets)
+            , num_queries(_num_queries)
+    //, all_queries(p_values.size(), vector<SelectionQuerySet*>(num_query_sets))
+    {
+        rand.seed(123);
+
+        vector<SelectionQuerySet> current;// = all_queries.at(i);
+        //SelectionQuerySet.PROB_INCREASE_PER_COLUMN = p;
+        cout << "Creating queries for p="+ to_string(p) << " max_num_columns=" << max_num_columns << endl;
+        vector<double> selectivities = {selectivity};
+
+        for(int set=0;set<num_query_sets;set++) {
+            SelectionQuerySet temp (selectivities, p, scale, num_queries, max_num_columns, rand);
+            current.push_back(temp);
+        }
+        all_queries.push_back(current);
+
+        cout << "Created" << all_queries.size() << " p values" << endl;
+        for(vector<SelectionQuerySet> set : all_queries) {
+            cout << "Printing statistics for " << set.size() << " query sets" << endl;
+            SelectionQuerySet::statisticsQuerySet(set);
+        }
+    }
+
     static void run_mono_column_benchmark(vector<DatabaseSystem*> all_dbms, const double scale, int num_queries, bool repeat){
         vector<double> default_selectivities = {//XXX
                 1,1.0/2.0

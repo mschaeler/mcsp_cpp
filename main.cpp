@@ -67,6 +67,33 @@ void run_p_1_p_benchmark(DatabaseSystem* dbms){
     }
 }
 
+void run_selectivity_experiments(DatabaseSystem* dbms){
+    int num_queries_per_set = 100;
+    int num_query_sets = 20;
+    double p = 1.0;
+    double scale = 0.1;
+    int num_predicates = 2;
+
+    vector<double> selectivities = {1,1.0/2.0, 1.0/4.0, 1.0/8.0, 1.0/16.0, 1.0/32.0, 1.0/64.0, 1.0/128.0, 1.0/256.0};
+    cout << "run_selectivity_experiments() for sel=" << Util::to_string(selectivities) << " scale=" << scale << " #p=" << num_predicates << endl;
+
+    vector<SelectionTests> experiments;
+    for(auto selectivity : selectivities){
+        experiments.emplace_back(scale, num_query_sets, num_queries_per_set, num_predicates, p, selectivity);
+    }
+    Table& t=*dbms->get_TPC_H_lineitem(scale);
+
+    for(SelectionTests experiment : experiments){
+        experiment.p_benchmark(dbms, t, false);
+    }
+    t.~Table();
+}
+void run_selectivity_experiments(vector<DatabaseSystem*>& all_dbms){
+    for(auto dbms : all_dbms){
+        run_selectivity_experiments(dbms);
+    }
+}
+
 int64_t read_cost  = 0;
 int64_t write_cost = 0;
 
@@ -142,13 +169,14 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper() };
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper(), new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External()};
+    //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
     //run_p_benchmark(scale, all_dbms,num_columns);
     //run_p_1_benchmark(all_dbms, num_columns);
-    run_p_1_p_benchmark(all_dbms.at(0));
+    //run_p_1_p_benchmark(all_dbms.at(0));
+    run_selectivity_experiments(all_dbms);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;
