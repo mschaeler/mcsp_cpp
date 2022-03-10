@@ -10,7 +10,7 @@
 #include "../general/Table.h"
 
 //#include "../general/Util.h"
-#define USE_64_BIT_POINTER
+//#define USE_64_BIT_POINTER
 
 #ifdef USE_64_BIT_POINTER
 typedef int64_t elf_pointer;
