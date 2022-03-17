@@ -71,8 +71,8 @@ void run_selectivity_experiments(DatabaseSystem* dbms){
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     double p = 1.0;
-    double scale = 50;
-    int num_predicates = 3;
+    double scale = 30;
+    int num_predicates = 2;
 
     vector<double> selectivities = {1,1.0/2.0, 1.0/4.0, 1.0/8.0, 1.0/16.0, 1.0/32.0, 1.0/64.0, 1.0/128.0, 1.0/256.0};
     cout << "run_selectivity_experiments() for sel=" << Util::to_string(selectivities) << " scale=" << scale << " #p=" << num_predicates << endl;
@@ -167,9 +167,9 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Cutoffs(), new MyRowiseHyper(), new MyMonetDB()};
     //vector<DatabaseSystem*> all_dbms = {new SortedProjectionDBMS(), new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
-    //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
+    vector<DatabaseSystem*> all_dbms = {new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper(), new SortedProjectionDBMS()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new MyMonetDB(), new MyHyper(), new MyMonetDB_Indexed(),new MyRowiseHyper(), new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
