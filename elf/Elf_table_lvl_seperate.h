@@ -121,7 +121,7 @@ protected:
         return num_dim-level+1;
     }
 
-    inline int get_node_size(elf_pointer start_node) const {
+    inline int get_node_size(const elf_pointer start_node) const {
         if(Elf::SAVE_MODE) {
             if(!is_node_length_offset(start_node)){
                 cout << "Error: intGetNodeLength() no length at this offset" << endl;
