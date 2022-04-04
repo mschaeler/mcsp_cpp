@@ -120,8 +120,8 @@ void test_something(double scale){
 }
 
 int main(int argc, char* argv[]) {
-    double scale =0.1;
-    int num_columns = 3;
+    double scale = 50;
+    int num_columns = 2;
 
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
@@ -173,10 +173,10 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
-    //run_p_benchmark(scale, all_dbms,num_columns);
+    run_p_benchmark(scale, all_dbms,num_columns);
     //run_p_1_benchmark(all_dbms, num_columns);
     //run_p_1_p_benchmark(all_dbms.at(0));
-    run_selectivity_experiments(all_dbms);
+    //run_selectivity_experiments(all_dbms);
 
     std::cout << "Bye, Bye!" << std::endl;
     return 0;
