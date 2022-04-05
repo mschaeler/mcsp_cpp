@@ -121,7 +121,7 @@ void test_something(double scale){
 
 int main(int argc, char* argv[]) {
     double scale = 50;
-    int num_columns = 2;
+    int num_columns = 3;
 
     vector<int> dummy;
     cout << "P-Benchmark suite! I am running on 64 bit if 4611686018427387903 == " << dummy.max_size()  << std::endl;
