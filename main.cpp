@@ -33,8 +33,8 @@ void run_p_1_benchmark(vector<DatabaseSystem*>& all_dbms, int num_columns){
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     double p = 1.0;
-    //vector<double> scales = {80,90,100};
-    vector<double> scales = {1,5,10,15};
+    vector<double> scales = {10,20,30,40,50,60,70,80,90,100};
+    //vector<double> scales = {1,5,10,15};
     //vector<double> scales = {60};
     for(double scale : scales) {
         cout << "***scale=" << scale << endl;
@@ -173,8 +173,8 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
-    run_p_benchmark(scale, all_dbms,num_columns);
-    //run_p_1_benchmark(all_dbms, num_columns);
+    //run_p_benchmark(scale, all_dbms,num_columns);
+    run_p_1_benchmark(all_dbms, num_columns);
     //run_p_1_p_benchmark(all_dbms.at(0));
     //run_selectivity_experiments(all_dbms);
 
