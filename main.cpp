@@ -32,7 +32,7 @@ void run_p_1_benchmark(vector<DatabaseSystem*>& all_dbms, int num_columns){
     Table* t;
     int num_queries_per_set = 100;
     int num_query_sets = 20;
-    double p = 1.1;
+    double p = 1.2;
     vector<double> scales = {10,20,30,40,50,60,70,80,90,100};
     //vector<double> scales = {1,5,10,15};
     //vector<double> scales = {60};
