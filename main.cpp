@@ -24,6 +24,7 @@ void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms, int max_num
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns);
+    cout << "SelectionTests with selectivites=" << Util::to_string(experiment.default_selectivities) << endl;
     experiment.p_benchmark(all_dbms, false);
 }
 
