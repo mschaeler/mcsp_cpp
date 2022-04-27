@@ -226,8 +226,8 @@ class SelectionTests {
 public:
     //vector<double> p_values = {1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
     vector<double> p_values = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
-    vector<double> default_selectivities = {1.0/16.0};
-    /*vector<double> default_selectivities = {
+    //vector<double> default_selectivities = {1.0/16.0};
+    vector<double> default_selectivities = {
             1,1.0/2.0
             , 1.0/4.0
             , 1.0/8.0
@@ -236,7 +236,7 @@ public:
             , 1.0/64.0
             , 1.0/128.0
             , 1.0/256.0
-    };*/
+    };
     vector<vector<SelectionQuerySet>> all_queries;// (p_values.size(), vector<SelectionQuerySet*>(num_query_sets));
     double scale;
     int num_query_sets;
