@@ -225,7 +225,7 @@ public:
         cout << "Util::getDataTPCHTuple_columnar(vec<vec<int>>, "<<s<<")";
 
         auto begin = chrono::system_clock::now();
-        uint64_t num_tuples = (int)(NUM_TUPLES_S_ONE * s);
+        uint64_t num_tuples = (uint64_t)(NUM_TUPLES_S_ONE * s);
         srand(seed);
 
         for(uint64_t tid=0;tid<num_tuples;tid++) {

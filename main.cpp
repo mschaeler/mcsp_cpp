@@ -24,7 +24,7 @@ void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms, int max_num
     int num_queries_per_set = 100;
     int num_query_sets = 20;
     SelectionTests experiment(scale, num_query_sets, num_queries_per_set, max_num_columns);
-    cout << "SelectionTests with selectivites=" << Util::to_string(experiment.default_selectivities) << endl;
+    cout << "SelectionTests with selectivites=" << Util::to_string(Util::cardinalitiesTPCH(scale)) << endl;//TODO change me
     experiment.p_benchmark(all_dbms, false);
 }
 
@@ -170,9 +170,9 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed(), new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new SortedProjectionDBMS(), new MyMonetDB_Indexed(), new MyMonetDB(), new MyHyper(), new MyRowiseHyper()};
+    //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new SortedProjectionDBMS(), new MyMonetDB_Indexed(), new MyMonetDB(), new MyHyper(), new MyRowiseHyper()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    //vector<DatabaseSystem*> all_dbms = {new MyHyper()};
+    vector<DatabaseSystem*> all_dbms = {new MyHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
     run_p_benchmark(scale, all_dbms,num_columns);
     //run_p_1_benchmark(all_dbms, num_columns);

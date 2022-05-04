@@ -74,11 +74,11 @@ class MCSP : public SelectionQuery {
   * @param selectivity
   * @return
   */
-    static vector<int> single_column_predicate(int col, vector<int> cardinalities, Random& rand, double selectivity) {
+    static vector<int> single_column_predicate(int col, int cardinality, Random& rand, double selectivity) {
         vector<int> predicates(2);
 
         int min_val = 0;
-        int max_val = cardinalities[col];
+        int max_val = cardinality;
 
         int num_values = max_val-min_val;
         int range = (int) ((double) num_values * selectivity);
@@ -114,7 +114,7 @@ public:
     {
         columns.at(0)       = column;
         selectivities.at(0) = selectivity;
-        vector<int> sinlge_predicate = single_column_predicate(column, cardinalities, rand, selectivity);
+        vector<int> sinlge_predicate = single_column_predicate(column, cardinalities.at(column), rand, selectivity);
         //cout << "column="<<column<<" selectivity=" << selectivity << "predicate=" << Util::to_string(sinlge_predicate) << endl;
         predicates.at(0)    = sinlge_predicate;
     }
@@ -145,7 +145,7 @@ public:
             int column = columns.at(i);
             double sel = base_selectivities[rand.nextInt(base_selectivities.size())];
             selectivities.push_back(sel);
-            vector<int> sinlge_predicate = single_column_predicate(column, cardinalities, rand, selectivities[i]);
+            vector<int> sinlge_predicate = single_column_predicate(column, cardinalities.at(column), rand, selectivities[i]);
             predicates.push_back(sinlge_predicate);
         }
         //cout << "sel[] = " << Util::to_string(selectivities) << endl;
