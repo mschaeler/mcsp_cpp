@@ -35,7 +35,7 @@ public:
     const static int NUM_DIM_TPCH = 15;
 
 
-    static vector<int> getDataTPCHTuple(double s){
+    static vector<int> getDataTPCHTuple(double s, int tid){
 
         vector<int> tuple(NUM_DIM_TPCH);
 
@@ -74,7 +74,7 @@ public:
         }
 
         //l_orderkey
-        tuple[l_orderkey] = rand()%(int)(s*SF_ORDERS);
+        tuple[l_orderkey] = tid%(int)(s*SF_ORDERS);
         //l_partkey
         tuple[l_partkey] = rand()%(int)(s*SF_PART);
         //l_suppkey
@@ -84,7 +84,12 @@ public:
         //l_quantity
         tuple[l_quantity] = rand()%50;
         //l_extendedprice
-        tuple[l_extendedprice] = tuple[l_quantity]*(rand()%21000);
+        int P_PARTKEY = rand() % (int)(s*SF_PART);
+        int P_RETAILPRICE = (90000 + ((P_PARTKEY/10) % 20001 ) + 100 * (P_PARTKEY % 1000))/100;
+        //tuple[l_extendedprice] = tuple[l_quantity]*P_RETAILPRICE;//XXX P86
+        tuple[l_extendedprice] = tid;//XXX
+        cout << "P_PARTKEY="<<P_PARTKEY<<" P_RETAILPRICE="<<P_RETAILPRICE<<" l_extendedprice=" << tuple[l_extendedprice] << endl;
+        //tuple[l_extendedprice] = rand();
         //l_discount
         tuple[l_discount] = rand()%11;//in %
         //l_tax
@@ -108,7 +113,7 @@ public:
 
         return tuple;//by value
     }
-
+/*
     static void getDataTPCHTuple_lin(vector<int>& all_data, size_t offset, double s){
 
         size_t l_shipdate	=0;
@@ -178,7 +183,7 @@ public:
         //l_receiptdate
         all_data[offset+l_receiptdate] = all_data[offset+l_shipdate]+1+(rand()%30);//in %
 
-    }
+    }*/
 
     static vector<vector<int>> getDataTPCHTuple_columnar(double s){
         cout << "Util::getDataTPCHTuple_columnar(s="<<s<<")";
@@ -230,7 +235,9 @@ public:
 
         for(uint64_t tid=0;tid<num_tuples;tid++) {
             //l_orderkey
-            all_data.at(l_orderkey).at(tid) = rand() % (int) (s * SF_ORDERS);
+            //all_data.at(l_orderkey).at(tid) = rand() % (int) (s * SF_ORDERS);
+            all_data.at(l_orderkey).at(tid) = tid % (int) (s * SF_ORDERS);
+            //cout <<(int) (s * SF_ORDERS) << "l_orderkey=" << all_data.at(l_orderkey).at(tid) << " ";
             //l_partkey
             all_data.at(l_partkey).at(tid) = rand() % (int) (s * SF_PART);
             //l_suppkey
@@ -240,7 +247,12 @@ public:
             //l_quantity
             all_data.at(l_quantity).at(tid) = rand() % 50;
             //l_extendedprice
-            all_data.at(l_extendedprice).at(tid) = all_data.at(l_quantity).at(tid) * (rand() % 21000);
+            int P_PARTKEY = tid % (int)(s*SF_PART);
+            int P_RETAILPRICE = (90000 + ((P_PARTKEY/10) % 20001 ) + 100 * (P_PARTKEY % 1000))/100;
+            //all_data.at(l_extendedprice).at(tid) = all_data.at(l_quantity).at(tid)*P_RETAILPRICE;//XXX P86
+            //all_data.at(l_extendedprice).at(tid) = rand() % num_tuples;//XXX P86
+            //cout << "P_PARTKEY="<<P_PARTKEY<<" P_RETAILPRICE="<<P_RETAILPRICE<<" l_extendedprice=" << all_data.at(l_extendedprice).at(tid) << endl;
+            all_data.at(l_extendedprice).at(tid) = tid;//ensure uniqueness
             //l_discount
             all_data.at(l_discount).at(tid) = rand() % 11;//in %
             //l_tax
@@ -265,7 +277,7 @@ public:
         auto end = chrono::system_clock::now();
         cout << " Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " |D|=" << all_data.at(0).size() << endl;
     }
-
+/*
     static void getDataTPCHTuple_lin_columnar(vector<int>& all_data, size_t tid, vector<size_t> column_offsets, double s){
 
         size_t l_shipdate	=0;
@@ -335,7 +347,7 @@ public:
         //l_receiptdate
         all_data[column_offsets[l_receiptdate]+tid] = all_data[column_offsets[l_shipdate]+tid]+1+(rand()%30);//in %
 
-    }
+    }*/
     static string to_string(vector<int64_t> vec){
         string str;
         str.append("(");
@@ -440,7 +452,7 @@ public:
         srand(seed);
         vector<vector<int>> data(size);
         for(int i=0;i<size;i++) {
-            data[i]=getDataTPCHTuple(s);
+            data[i]=getDataTPCHTuple(s,i);
             if(i%1000000==0){
                 cout << i << " ";
             }
@@ -449,7 +461,7 @@ public:
         cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
         return data;
     }
-
+/*
     static vector<int>* getDataTPCH_rowise(double s){
         cout << "Util::getDataTPCH_rowise("<<s<<")";
         auto begin = chrono::system_clock::now();
@@ -471,7 +483,7 @@ public:
         auto end = chrono::system_clock::now();
         cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
         return data;
-    }
+    }*/
 
     static vector<size_t> get_offsets(const size_t total_size, const size_t num_columns) {
         size_t size_per_column = total_size / num_columns;
@@ -482,6 +494,7 @@ public:
         return ret;
     }
 
+    /*
     static vector<int>* getDataTPCH_columnar(double s){
         cout << "Util::getDataTPCH_columnar("<<s<<")";
         auto begin = chrono::system_clock::now();
@@ -504,7 +517,7 @@ public:
         auto end = chrono::system_clock::now();
         cout << "Done in "<<chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
         return data;
-    }
+    }*/
 
 
     static inline bool isIn(const int value, const int lower, const int upper){

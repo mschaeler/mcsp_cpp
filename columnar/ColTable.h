@@ -31,9 +31,26 @@ public:
     //, columns(Util::NUM_DIM_TPCH, vector<int>((int)(Util::NUM_TUPLES_S_ONE*s)) )
     , columns(Util::getDataTPCHTuple_columnar(s))
     {
-        cout << "cardinalities\t";
+        cout << "\tmax_values\t";
+        vector<int> max_values;
         for(auto& c : columns){
-            cout << Util::max(c)<<"\t";
+            auto max = Util::max(c);
+            max_values.push_back(max);
+            cout << max <<"\t";
+        }
+        cout << endl;
+        cout << "cardinalities\t";
+        for(int c=0;c<columns.size();c++){
+            int max = max_values.at(c);
+            vector<bool> exists(max+1);
+            for(int value : columns.at(c)){
+                exists.at(value) = true;
+            }
+            int sum_exists = 0;
+            for(bool b : exists){
+                sum_exists += (b) ? 1:0;
+            }
+            cout << sum_exists <<"\t";
         }
         cout << endl;
         /*//Util::getDataTPCHTuple_columnar(columns, s);
