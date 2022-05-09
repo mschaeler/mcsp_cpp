@@ -88,7 +88,7 @@ public:
         int P_RETAILPRICE = (90000 + ((P_PARTKEY/10) % 20001 ) + 100 * (P_PARTKEY % 1000))/100;
         //tuple[l_extendedprice] = tuple[l_quantity]*P_RETAILPRICE;//XXX P86
         tuple[l_extendedprice] = tid;//XXX
-        cout << "P_PARTKEY="<<P_PARTKEY<<" P_RETAILPRICE="<<P_RETAILPRICE<<" l_extendedprice=" << tuple[l_extendedprice] << endl;
+        //cout << "P_PARTKEY="<<P_PARTKEY<<" P_RETAILPRICE="<<P_RETAILPRICE<<" l_extendedprice=" << tuple[l_extendedprice] << endl;
         //tuple[l_extendedprice] = rand();
         //l_discount
         tuple[l_discount] = rand()%11;//in %
