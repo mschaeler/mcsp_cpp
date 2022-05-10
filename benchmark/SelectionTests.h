@@ -227,7 +227,7 @@ public:
     //vector<double> p_values = {1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
     vector<double> p_values = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
     //vector<double> p_values = {2.0,1.9,1.8,1.7,1.6,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.4,0.3,0.2,0.1};
-    vector<double> default_selectivities = {1.0/8};
+    vector<double> default_selectivities = {1.0/4};
     /*vector<double> default_selectivities = {
             1,1.0/2.0
             , 1.0/4.0
