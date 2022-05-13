@@ -17,6 +17,7 @@
 #include "elf_cutoff_external/Elf_Table_Cutoff_External.h"
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Cutoffs_External.h"
 #include "elf_cutoff_external/Elf_Dbms_Lvl_Ranges_External.h"
+#include "hot/HOT.hpp"
 
 void run_p_benchmark(double scale, vector<DatabaseSystem*> all_dbms, int max_num_columns){
     DatabaseSystem* dbms;
