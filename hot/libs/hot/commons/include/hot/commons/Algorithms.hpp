@@ -5,13 +5,14 @@
 #include <bitset>
 #include <immintrin.h>
 #include <iostream>
+#include <bit>
 
 namespace hot { namespace commons {
 
 inline uint32_t getBytesUsedInExtractionMask(uint64_t successiveExtractionMask) {
 	uint32_t const unsetBytes = _mm_movemask_pi8(_mm_cmpeq_pi8(_mm_and_si64(_mm_set_pi64x(successiveExtractionMask), _mm_set_pi64x(UINT64_MAX)), _mm_setzero_si64()));
 	//8 - numberUnsetBytes
-	return 8 - _mm_popcnt_u32(unsetBytes);
+	return 8 - std::popcount(unsetBytes);
 }
 
 inline uint16_t getMaximumMaskByteIndex(uint16_t bitsUsed) {
@@ -89,12 +90,12 @@ inline bool isBitSet(uint8_t const * existingRawKey, uint16_t const mAbsoluteBit
 }
 
 inline uint16_t getLeastSignificantBitIndexInByte(uint8_t byte) {
-	return (7 - _tzcnt_u32(byte));
+    return 7 - std::countr_zero(byte);
 }
 
 inline uint16_t getMostSignificantBitIndexInByte(uint8_t byte) {
 	assert(byte > 0);
-	return _lzcnt_u32(byte) - 24;
+	return std::countl_zero(byte) - 24;
 }
 
 inline __attribute__((always_inline)) int getMostSignificantBitIndex(uint32_t number) {

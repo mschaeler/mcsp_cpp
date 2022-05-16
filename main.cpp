@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed(), new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new SortedProjectionDBMS(), new MyMonetDB_Indexed(), new MyMonetDB(), new MyHyper(), new MyRowiseHyper()};
+    vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(), new SortedProjectionDBMS(), new MyMonetDB_Indexed(), new MyMonetDB(), new MyHyper(), new MyRowiseHyper(), new HOTDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper()};
     //SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
