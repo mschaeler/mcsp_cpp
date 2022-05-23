@@ -177,9 +177,11 @@ public:
 
         //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
 
-for (auto iter = low; iter != up; ++iter)
+        int i = 0;
+        for (auto iter = low; iter != up; ++iter)
         {
             auto &vals = (*iter);
+            std::cout << i++ << endl;
             tids.insert(tids.end(), vals.begin(), vals.end());
         }
         //intermediate_result.move(std::move(tids));
