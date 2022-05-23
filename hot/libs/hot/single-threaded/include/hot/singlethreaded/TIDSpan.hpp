@@ -105,7 +105,7 @@ namespace hot {
                 using reference = value_type &;
 
                 difference_type operator-(const Iterator &other) const {
-                    return other.pos - pos;
+                    return pos - other.pos;
                 }
 
                 difference_type operator+=(const std::ptrdiff_t size) {
