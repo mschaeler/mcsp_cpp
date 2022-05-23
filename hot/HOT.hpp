@@ -181,11 +181,10 @@ public:
         for (auto iter = low; iter != up; ++iter)
         {
             auto &vals = (*iter);
-            std::cout << i++ << endl;
             //tids.insert(tids.end(), vals.begin(), vals.end());
             tids.push_back(3);
         }
-        //intermediate_result.move(std::move(tids));
+        intermediate_result.move(std::move(tids));
 
         if (LOG_COST) {
             read_cost += 2 * log2(t.size());
