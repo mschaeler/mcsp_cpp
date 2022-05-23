@@ -167,7 +167,10 @@ public:
     Synopsis &select_1(HOTTable &t, const int col_index, const int lower, const int upper) {
         HOT &p = t.columns.at(col_index);
         //Projection& p = t.first_proj;
-        vector<int> tids;
+        //vector<int> tids;
+        if(intermediate_result.size()<t.size()){
+            intermediate_result.ensure_capacity(t.size());
+        }
 
         auto low = p.col_data.lower_bound( lower);
         auto up = p.col_data.upper_bound(upper);
@@ -177,13 +180,14 @@ public:
 
         //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
 
-/*for (auto iter = low; iter != up; ++iter)
+        for (auto iter = low; iter != up; ++iter)
         {
             auto &vals = (*iter);
-            tids.insert(tids.end(), vals.begin(), vals.end());
+            intermediate_result.array.insert(intermediate_result.array.end(), vals.begin(), vals.end());
         }
-        intermediate_result.move(std::move(tids));
-*/
+
+        //intermediate_result.move(std::move(tids));
+
         if (LOG_COST) {
             read_cost += 2 * log2(t.size());
             write_cost += intermediate_result.size();
