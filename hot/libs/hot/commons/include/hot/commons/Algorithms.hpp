@@ -19,7 +19,7 @@ inline uint16_t getMaximumMaskByteIndex(uint16_t bitsUsed) {
 	return (bitsUsed - 1)/8;
 }
 
-template<git stauint numberExtractionMasks> inline std::array<uint64_t, numberExtractionMasks> getUsedExtractionBitsForMask(uint32_t usedBits, uint64_t  const * extractionMask);
+template<int numberExtractionMasks> inline std::array<uint64_t, numberExtractionMasks> getUsedExtractionBitsForMask(uint32_t usedBits, uint64_t  const * extractionMask);
 
 template<uint numberExtractionMasks> inline __m256i extractionMaskToRegister(std::array<uint64_t, numberExtractionMasks> const & extractionData);
 
