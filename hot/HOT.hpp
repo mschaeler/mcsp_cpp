@@ -182,7 +182,8 @@ public:
         {
             auto &vals = (*iter);
             std::cout << i++ << endl;
-            tids.insert(tids.end(), vals.begin(), vals.end());
+            //tids.insert(tids.end(), vals.begin(), vals.end());
+            tids.push_back(3);
         }
         //intermediate_result.move(std::move(tids));
 
