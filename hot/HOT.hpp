@@ -177,13 +177,13 @@ public:
 
         //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
 
-        for (auto iter = low; iter != up; ++iter)
+/*for (auto iter = low; iter != up; ++iter)
         {
             auto &vals = (*iter);
             tids.insert(tids.end(), vals.begin(), vals.end());
         }
         intermediate_result.move(std::move(tids));
-
+*/
         if (LOG_COST) {
             read_cost += 2 * log2(t.size());
             write_cost += intermediate_result.size();
