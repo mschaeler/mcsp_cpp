@@ -167,7 +167,8 @@ public:
     Synopsis &select_1(HOTTable &t, const int col_index, const int lower, const int upper) {
         HOT &p = t.columns.at(col_index);
         //Projection& p = t.first_proj;
-        vector<int> tids;
+        //vector<int> tids;
+
 
         auto low = p.col_data.lower_bound( lower);
         auto up = p.col_data.upper_bound(upper);
@@ -180,10 +181,10 @@ public:
         for (auto iter = low; iter != up; ++iter)
         {
             auto &vals = (*iter);
-            tids.insert(tids.end(), vals.begin(), vals.end());
+            intermediate_result.array.insert(intermediate_result.array.end(), vals.begin(), vals.end());
             //tids.push_back(3);
         }
-        intermediate_result.move(std::move(tids));
+        //intermediate_result.move(std::move(tids));
 
         if (LOG_COST) {
             read_cost += 2 * log2(t.size());
