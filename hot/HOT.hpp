@@ -170,14 +170,9 @@ public:
         vector<int> tids;
 
         auto low = p.col_data.lower_bound( lower);
-        auto up = p.col_data.upper_bound(upper);
-
-        //std::cout << "lower_bound at position " << (low- sorted_column.begin()) << endl;
-        //std::cout << "upper_bound at position " << (up - sorted_column.begin()) << endl;
 
         //We copy from tid vector, not from the sorted column itself. So, the iterators (low,up) cannot be used for copying directly.
-
-        for (auto iter = low; iter != up; ++iter)
+        for (auto iter = low; (*iter).value <= upper && iter != p.col_data.end(); ++iter) //FIXME can not just lookup upper bound too and iterate over range, as sometimes, the iterater from low seems to miss up, probably a bug in the iterator ++ implementation
         {
             auto &vals = (*iter);
             tids.insert(tids.end(), vals.begin(), vals.end());
@@ -203,6 +198,11 @@ public:
 
     string name() override {
         return "HOT DBMS";
+    }
+
+    void clear() override
+    {
+        intermediate_result = Synopsis();
     }
 };
 

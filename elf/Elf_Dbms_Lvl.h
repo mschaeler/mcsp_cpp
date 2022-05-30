@@ -124,6 +124,11 @@ public:
     string name(){
         return "Elf_Dbms_Lvl";
     }
+
+    void clear() override
+    {
+        result_buffer = Synopsis();
+    }
 };
 
 

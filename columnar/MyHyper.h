@@ -258,6 +258,11 @@ public:
     string name(){
         return "MyHyper";
     }
+
+    void clear() override
+    {
+        intermediate_result = Synopsis();
+    }
 };
 
 

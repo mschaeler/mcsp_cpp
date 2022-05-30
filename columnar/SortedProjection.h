@@ -256,6 +256,11 @@ public:
     string name() override{
         return "Sorted Projection DBMS";
     }
+
+    void clear() override
+    {
+        intermediate_result = Synopsis();
+    }
 };
 
 #endif //MY_MCSP_SORTEDPROJECTION_H

@@ -12,31 +12,29 @@ class Synopsis {
     int32_t write_pointer = 0;
 public:
     vector<int> array;
-    Synopsis(int size) : array(size){
-
+    Synopsis(int size) : array{}{
+        array.reserve(size);
     }
     Synopsis() : Synopsis(10000){
 
     }
     vector<int> getTrimmedArray(){//By value
-        vector<int> newVec(array.begin(), array.begin() + write_pointer);
-        return newVec;
+        return array;
     }
     void add(int value){
-        //TODO add write cost here
         if(write_pointer>=array.capacity()){
-            array.resize(2*array.capacity());
+            array.reserve(2*array.capacity());
         }
-        array[write_pointer++] = value;
+        array.push_back(value);
     }
-    int size(){return write_pointer;}
+    int size(){return array.size();}
 
     int get(int index){
         return array[index];
     }
 
     void clear() {
-        write_pointer = 0;
+        array.clear();
     }
 
     void ensure_capacity(const std::vector<int>::size_type size){
@@ -46,23 +44,21 @@ public:
     }
 
     void copy(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
-        write_pointer = end-begin;
-        ensure_capacity(write_pointer);
-        std::copy(begin, end, array.begin());
+        ensure_capacity(std::distance(begin, end));
+        array.clear();
+        array.insert(array.begin(), begin, end);
     }
 
     void move(vector<int> other) {
-        write_pointer = other.size();
         array = std::move(other);
     }
 
     void copy_unsafe(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
-        write_pointer = end-begin;
-        std::copy(begin, end, array.begin());
+        array.clear();
+        array.insert(array.begin(), begin, end);
     }
     void add(vector<int>::const_iterator begin, vector<int>::const_iterator end) {
-        std::copy(begin, end, array.begin()+write_pointer);
-        write_pointer += end-begin;
+        std::copy(begin, end, std::back_inserter(array));
     }
 };
 

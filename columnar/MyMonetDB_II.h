@@ -134,6 +134,11 @@ class MyMonetDB_Indexed : public MyMonetDB{
     string name(){
         return "MyMonetDB Indexed";
     }
+
+    void clear() override
+    {
+        intermediate_result = Synopsis();
+    }
 };
 
 
