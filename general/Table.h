@@ -35,6 +35,8 @@ public:
         //nothing else todo
     }
 
+    virtual ~Table() = default;
+
     virtual uint64_t size() = 0;
 
     string out(){

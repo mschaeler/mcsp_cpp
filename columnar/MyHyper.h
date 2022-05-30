@@ -241,18 +241,15 @@ public:
         return select(table, column_indexes, predicates);
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
 
-        ColTable* table = new ColTable(scale);
+        auto table = std::make_unique<ColTable>(scale);
         //std::cout << table->out() << std::endl;
 
        /* if(Config::MATERIALIZE_DATA){
             ColTable::materialize(*table, scale);
         }*/
-
-        t =  dynamic_cast<Table *>(table);
-        return t;
+        return table;
     }
 
     string name(){
@@ -261,7 +258,7 @@ public:
 
     void clear() override
     {
-        intermediate_result = Synopsis();
+        intermediate_result.clear();
     }
 };
 

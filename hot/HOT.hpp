@@ -188,13 +188,10 @@ public:
         return intermediate_result;
     }
 
-    Table *get_TPC_H_lineitem(double scale) override {
-        Table *t;
-
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale) override {
         ColTable col_t(scale); // create only locally, s.t. it gets destroyed after leaving the method
-        auto *table = new HOTTable(col_t);
-        t = dynamic_cast<Table *>(table);
-        return t;
+        auto table = std::make_unique<HOTTable>(col_t);
+        return table;
     }
 
     string name() override {
@@ -203,7 +200,7 @@ public:
 
     void clear() override
     {
-        intermediate_result = Synopsis();
+        intermediate_result .clear();
     }
 };
 

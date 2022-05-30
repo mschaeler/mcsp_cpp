@@ -5,6 +5,7 @@
 #ifndef MCSP_DATABASESYSTEM_H
 #define MCSP_DATABASESYSTEM_H
 
+#include <memory>
 #include "Table.h"
 #include "Synopsis.h"
 
@@ -32,7 +33,7 @@ public:
         return select(t, column_indexes, predicates, dummy_selectivities);
     }
     virtual string name() = 0;
-    virtual Table* get_TPC_H_lineitem(double scale) = 0;
+    virtual  std::unique_ptr<Table> get_TPC_H_lineitem(double scale) = 0;
 
     virtual void clear() {
     }

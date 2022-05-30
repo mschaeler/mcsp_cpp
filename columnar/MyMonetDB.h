@@ -79,12 +79,9 @@ public:
         }
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
-
-        ColTable* table = new ColTable(scale);
-        t =  dynamic_cast<Table*>(table);
-        return t;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
+        auto table = std::make_unique<ColTable>(scale);
+        return table;
     }
 
     string name(){
@@ -93,7 +90,7 @@ public:
 
     void clear() override
     {
-        intermediate_result = Synopsis();
+        intermediate_result.clear();
     }
 };
 
