@@ -90,6 +90,11 @@ public:
     string name(){
         return "MyMonetDB";
     }
+
+    void clear() override
+    {
+        intermediate_result = Synopsis();
+    }
 };
 
 

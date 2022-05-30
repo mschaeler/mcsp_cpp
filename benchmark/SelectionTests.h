@@ -10,6 +10,8 @@
 #include "SelectionQuerySet.h"
 #include "../columnar/MyHyper.h"
 #include <algorithm>    // std::sort std::min
+#include <memory>
+#include <new>
 
 class Error{
 public:
@@ -433,7 +435,7 @@ public:
                     cout << check_sum << endl;
                 }
                 t.~Table();
-                delete dbs;//the snyopsis must go away
+                dbs->clear();//the snyopsis must go away
             }
         }while(repeat);
     }

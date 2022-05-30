@@ -295,8 +295,8 @@ private:
         const elf_pointer first_non_result_tid = get_tid_from_monolist(next_elem_pointer, elem_level+1);
         elf_pointer i = from;
         int tid;
-        //collect all tids until we hit the first tid of next subtree
-        while((tid = tids_in_elf_order.at(i))!=first_non_result_tid) {
+        //collect all tids until we hit the first tid of next subtree or the tid list is empty
+        while(i < tids_in_elf_order.size() && (tid = tids_in_elf_order.at(i))!=first_non_result_tid) {
             result_tids.add(tid);
             if(LOG_COST){write_cost++; read_cost++;}//XXX here the read cost may be a problem, but i think it is fair this way. similar as for indexed MonetDB
             i++;

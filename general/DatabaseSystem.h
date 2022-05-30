@@ -34,6 +34,9 @@ public:
     virtual string name() = 0;
     virtual Table* get_TPC_H_lineitem(double scale) = 0;
 
+    virtual void clear() {
+    }
+
 };
 
 
