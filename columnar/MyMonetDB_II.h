@@ -122,13 +122,10 @@ class MyMonetDB_Indexed : public MyMonetDB{
         return intermediate_result;
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
-
-        ColTable table = ColTable(scale);//create locally
-        ColTable_Indexed* t_1 = new ColTable_Indexed(table);//create globally
-        t =  dynamic_cast<Table*>(t_1);
-        return t;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
+        ColTable table(scale);//create locally
+        auto t_1 = std::make_unique<ColTable_Indexed>(table);//create globally
+        return t_1;
     }
 
     string name(){
@@ -137,7 +134,7 @@ class MyMonetDB_Indexed : public MyMonetDB{
 
     void clear() override
     {
-        intermediate_result = Synopsis();
+        intermediate_result.clear();
     }
 };
 

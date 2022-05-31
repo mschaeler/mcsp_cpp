@@ -9,7 +9,6 @@
 #include <algorithm> //copy(it,it,vec)
 
 class Synopsis {
-    int32_t write_pointer = 0;
 public:
     vector<int> array;
     Synopsis(int size) : array{}{
@@ -18,11 +17,14 @@ public:
     Synopsis() : Synopsis(10000){
 
     }
+
+    ~Synopsis() = default;
+
     vector<int> getTrimmedArray(){//By value
         return array;
     }
     void add(int value){
-        if(write_pointer>=array.capacity()){
+        if(array.size()>=array.capacity()){
             array.reserve(2*array.capacity());
         }
         array.push_back(value);

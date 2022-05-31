@@ -100,16 +100,15 @@ public:
         return select(table, column_indexes, predicates);
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
-        Elf_table_lvl_seperate* table;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
+        std::unique_ptr<Elf_table_lvl_seperate> table;
 
         if(Elf_table_lvl_seperate::exists(scale)){
-            table = Elf_table_lvl_seperate::from_file(scale);
+            table = std::unique_ptr<Elf_table_lvl_seperate>(Elf_table_lvl_seperate::from_file(scale));
         }else{
             //We first create a col table and then build the Elf from it
             ColTable col_t(scale); // create only locally, s.t. it gets destroyed after leaving the method
-            table = Elf_builder_separate::build(col_t);
+            table = std::unique_ptr<Elf_table_lvl_seperate>(Elf_builder_separate::build(col_t));
         }
 
         if(Config::MATERIALIZE_DATA){
@@ -117,8 +116,7 @@ public:
         }
 
         //std::cout << table->out() << std::endl;
-        t =  dynamic_cast<Table *>(table);
-        return t;
+        return table;
     }
 
     string name(){
@@ -127,7 +125,7 @@ public:
 
     void clear() override
     {
-        result_buffer = Synopsis();
+        result_buffer.clear();
     }
 };
 

@@ -353,7 +353,7 @@ public:
         }
     }
 
-    static void run_mono_column_benchmark(vector<DatabaseSystem*> all_dbms, const double scale, int num_queries, bool repeat){
+    static void run_mono_column_benchmark(vector<std::unique_ptr<DatabaseSystem>> &all_dbms, const double scale, int num_queries, bool repeat){
         vector<double> default_selectivities = {//XXX
                 1,1.0/2.0
                 , 1.0/4.0
@@ -369,10 +369,9 @@ public:
         SelectionTests tester(scale, default_selectivities, num_queries, max_column);
 
         do {
-            for(int d=0;d<all_dbms.size();d++) {
-                DatabaseSystem* dbs = all_dbms.at(d);
+            for(auto & dbs : all_dbms) {
                 cout << "\n"<<dbs->name()<<"\n";
-                Table& t=*dbs->get_TPC_H_lineitem(scale);
+                auto t = dbs->get_TPC_H_lineitem(scale);
 
                 string header = "\t";
 
@@ -411,7 +410,7 @@ public:
                             auto& columns = query.getColumns();
                             auto& predicates = query.getPredicate();
                             auto& selectivities = query.getSelectivities();
-                            auto& synopsis = dbs->select(t, columns, predicates,selectivities);
+                            auto& synopsis = dbs->select(*t, columns, predicates,selectivities);
                             check_sum += synopsis.size();
                             //cout << "check_sum=" << check_sum << endl;
                         }
@@ -434,7 +433,7 @@ public:
                     }
                     cout << check_sum << endl;
                 }
-                t.~Table();
+
                 dbs->clear();//the snyopsis must go away
             }
         }while(repeat);

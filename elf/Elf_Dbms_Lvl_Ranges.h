@@ -21,16 +21,13 @@ public:
         return result_buffer;
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
-        Elf_Table_Lvl_Cutoffs* table;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
 
         ColTable col_t(scale); // create only locally, s.t. it gets destroyed after leaving the method
-        table = Elf_builder_separate::build_with_cuttoffs(col_t);
+        auto table = std::unique_ptr<Elf_Table_Lvl_Cutoffs>(Elf_builder_separate::build_with_cuttoffs(col_t));
 
         //std::cout << table->out() << std::endl;
-        t =  dynamic_cast<Table *>(table);
-        return t;
+        return table;
     }
 
     string name(){

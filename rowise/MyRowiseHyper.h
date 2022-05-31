@@ -65,12 +65,9 @@ public:
         return "MyRowiseHyper";
     }
 
-    Table* get_TPC_H_lineitem(double scale){
-        Table* t;
-        RowTable* row_table = new RowTable(scale);
-        //std::cout << row_table->out() << std::endl;
-        t =  dynamic_cast<Table *>(row_table);
-        return t;
+    std::unique_ptr<Table> get_TPC_H_lineitem(double scale){
+        auto row_table = std::make_unique<RowTable>(scale);
+        return row_table;
     }
 };
 
