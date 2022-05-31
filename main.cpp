@@ -172,7 +172,8 @@ int main(int argc, char* argv[]) {
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyMonetDB_Indexed(), new SortedProjectionDBMS()};
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
-    all_dbms.emplace_back(std::make_unique<Elf_Dbms_Lvl>()); all_dbms.emplace_back(std::make_unique<Elf_Dbms_Lvl_Ranges_External>()); all_dbms.emplace_back(std::make_unique<SortedProjectionDBMS>()); all_dbms.emplace_back(std::make_unique<MyMonetDB_Indexed>()); all_dbms.emplace_back(std::make_unique<MyMonetDB>());all_dbms.emplace_back(std::make_unique<MyHyper>()); all_dbms.emplace_back(std::make_unique<MyRowiseHyper>()); all_dbms.emplace_back(std::make_unique<HOTDBMS>());
+    //all_dbms.emplace_back(std::make_unique<Elf_Dbms_Lvl>()); all_dbms.emplace_back(std::make_unique<Elf_Dbms_Lvl_Ranges_External>()); all_dbms.emplace_back(std::make_unique<SortedProjectionDBMS>()); all_dbms.emplace_back(std::make_unique<MyMonetDB_Indexed>()); all_dbms.emplace_back(std::make_unique<MyMonetDB>());all_dbms.emplace_back(std::make_unique<MyHyper>()); all_dbms.emplace_back(std::make_unique<MyRowiseHyper>()); all_dbms.emplace_back(std::make_unique<HOTDBMS>());
+    all_dbms.emplace_back(std::make_unique<MyHyper>());  all_dbms.emplace_back(std::make_unique<HOTDBMS>());
     //vector<DatabaseSystem*> all_dbms = {new Elf_Dbms_Lvl(), new Elf_Dbms_Lvl_Ranges_External(),new MyMonetDB_Indexed()};
     //vector<DatabaseSystem*> all_dbms = {new MyRowiseHyper()};
     SelectionTests::run_mono_column_benchmark(all_dbms, scale , 100, true);
